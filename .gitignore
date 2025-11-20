@@ -1,0 +1,25 @@
+# Dart/Flutter
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+*.dart.js
+*.dart.js.map
+*.info.json
+
+# IDE
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node (keeping existing)
+node_modules/
+package-lock.json
+
