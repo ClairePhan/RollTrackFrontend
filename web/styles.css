@@ -7,52 +7,30 @@ html, body {
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border: 50px solid #decafc;  /* border around entire screen */
-  box-sizing: border-box;       /* include padding and border in height/width */
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #333;
+}
+
+#output {
+  background: white;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 600px;
+  width: 90%;
 }
 
 h1 {
-  color: white;
-  margin: 10%;
-  text-align: center;
-  font-size: 300%;
-  font-weight: bold;
-  margin-bottom: 15%;
+  color: #667eea;
+  margin-bottom: 1rem;
 }
 
-.container {
-  text-align: center;        /* centers content inside container */
-}
-.rounded-btn {
-  
-  background-color: #764ba2;   /* button color */
-  color: white;                /* text color */
-  border: none;                /* remove default border */
-  padding: 30px 120px;          /* taller width makes it rectangular */
-  font-size: 300%;
-  border-radius: 100px;         /* rounded corners */
-  cursor: pointer;
-  transition: background 0.3s;
-  font-weight: bold;
-}
-
-.rounded-btn:active {
-  transform: scale(0.95);   /* slightly shrink on press */
-  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* optional subtle shadow */
-}
-
-.btn-icon {
-  width: 100px;       /* set desired width */
-  height: 100px;      /* set desired height */
-  margin-top: 50px;   /*space between icon and text*/
-}
-
-h2 {
-  color: white;
-  margin: 5%;
-  text-align: center;
-  font-size: 300%;
-  font-weight: bold;
+p {
+  line-height: 1.6;
+  color: #666;
 }
 
 
