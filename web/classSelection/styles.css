@@ -1,0 +1,97 @@
+html, body {
+  height: 100%;                /* make body fill the viewport */
+  margin: 0;                   /* remove default margin */
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background: #decafc;
+}
+
+h1 {
+  color: black;
+  padding: 2%;
+  text-align: center;
+  font-size: 300%;
+  font-weight: bold;
+  margin: 0px;
+}
+
+hr {
+  border: none;           /* remove default border */
+  height: 3px;            /* thickness */
+  background-color: #8333ff;/* color */
+  margin: 0;              /* adjust spacing */
+}
+
+.container {
+  text-align: center;        /* centers content inside container */
+}
+
+.button {
+  background: none;      /* removes button background */
+  border: none;          /* removes default button border */
+  padding: 0;            /* optional: remove extra spacing */
+  cursor: pointer;       /* makes it look clickable */
+}
+
+.button:active {
+  transform: scale(0.95);   /* slightly shrink on press */
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* optional subtle shadow */
+}
+
+.btn-icon {
+  width: 50px;       /* set desired width */
+  height: 50px;      /* set desired height */
+  margin-right: 25px;
+}
+
+h2 {
+  color: white;
+  margin: 5%;
+  text-align: center;
+  font-size: 300%;
+  font-weight: bold;
+}
+
+a {
+  text-decoration: none; /* gets rid of "_" in <a> */
+}
+
+.search-container {
+  text-align: center;       /* center the search bar */
+  margin: 20px 0;           /* spacing from other elements */
+}
+
+.search-bar {
+  width: 700px;             /* width of input */
+  height: 50px;
+  padding: 10px 15px;       /* inner spacing */
+  font-size: 16px;
+  border: 2px solid #333;   /* border color */
+  border-radius: 25px 0 0 25px; /* rounded left corners */
+  outline: none;            /* remove blue outline */
+}
+
+.search-button {
+  padding: 10px 15px;
+  height: 75px;
+  font-size: 16px;
+  border: 2px solid #333;  /* same border as input */
+  border-left: none;        /* remove double border */
+  border-radius: 0 25px 25px 0; /* rounded right corners */
+  background-color: #8333ff;   /* button color */
+  color: white;
+  cursor: pointer;
+}
+
+.search-button:hover {
+  background-color: #555;   /* hover effect */
+}
+
+.search-bar::placeholder {
+  font-size: 25px;       /* set the size you want */
+  color: #555;           /* optional: change placeholder color */
+  font-style: italic;    /* optional: make it italic */
+}
