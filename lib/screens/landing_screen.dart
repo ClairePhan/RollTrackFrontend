@@ -132,7 +132,7 @@ class LandingScreen extends StatelessWidget {
                       ],
                     ),
                     child: QrImageView(
-                      data: 'https://rolltrack.app/checkin',
+                      data: 'https://rolltrack.app/classes',
                       version: QrVersions.auto,
                       size: 200,
                       backgroundColor: Colors.white,

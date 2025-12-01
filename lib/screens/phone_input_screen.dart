@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/class_model.dart';
+import '../models/person_model.dart';
+
+
+
 
 class PhoneInputScreen extends StatefulWidget {
   final ClassModel classModel;
@@ -15,6 +19,13 @@ class PhoneInputScreen extends StatefulWidget {
 }
 
 class _PhoneInputScreenState extends State<PhoneInputScreen> {
+  static final List<PersonModel> people = [
+    PersonModel(
+      name: 'Hokulani Topping',
+      phoneNumber: '8084222222',
+    ),
+  ];
+
   final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
@@ -37,24 +48,43 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           setState(() {
             _isLoading = false;
           });
-          
-          // Show success message
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                'Checked in to ${widget.classModel.name} with phone number ${_phoneController.text}',
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 3),
-            ),
-          );
 
-          // Navigate back to classes screen after a delay
-          Future.delayed(const Duration(seconds: 2), () {
-            if (mounted) {
-              Navigator.pop(context);
-            }
-          });
+          final enteredPhone = _phoneController.text.trim();
+          final matchingPeople = people.where(
+            (p) => p.phoneNumber == enteredPhone,
+          ).toList();
+
+          if (matchingPeople.isNotEmpty) {
+            final person = matchingPeople.first;
+            // Phone number found - show success message
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Successfully checked in ${person.name} to ${widget.classModel.name}',
+                ),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 3),
+              ),
+            );
+
+            // Navigate back to classes screen after a delay
+            Future.delayed(const Duration(seconds: 2), () {
+              if (mounted) {
+                Navigator.pop(context);
+              }
+            });
+          } else {
+            // Phone number not found - show error message
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text(
+                  'Phone number not found. Please check your number and try again.',
+                ),
+                backgroundColor: Colors.red,
+                duration: Duration(seconds: 3),
+              ),
+            );
+          }
         }
       });
     }
