@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
+import 'phone_input_screen.dart';
 
 class ClassesScreen extends StatelessWidget {
   const ClassesScreen({super.key});
@@ -156,7 +157,12 @@ class _ClassCard extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          // Add tap functionality here if needed
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PhoneInputScreen(classModel: classModel),
+            ),
+          );
         },
         borderRadius: BorderRadius.circular(12),
         child: Padding(
