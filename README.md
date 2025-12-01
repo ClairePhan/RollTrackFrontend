@@ -1,85 +1,112 @@
 # RollTrackFrontend
 
-A Dart web frontend application.
+A Flutter mobile app for RollTrack - martial arts class tracking, optimized for tablets.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Dart SDK (already installed via Flutter)
+- Flutter SDK (already installed)
+- Dart SDK (comes with Flutter)
 
 ### Running the Application
 
-#### Recommended: Development with Auto-reload (webdev)
+#### Development Mode
 
-The best option for development is using `webdev`, which handles compilation and serving:
-
-1. Install webdev globally:
+1. Get dependencies:
 ```bash
-dart pub global activate webdev
+flutter pub get
 ```
 
-2. Run the development server:
+2. Run the app:
 ```bash
-dart pub global run webdev serve
+flutter run
 ```
 
 This will:
-- Compile your Dart code to JavaScript automatically
-- Start a local development server
-- Watch for file changes and automatically rebuild
-- Serve at `http://localhost:8080`
+- Launch the app on your connected device/emulator
+- Enable hot reload for instant updates
+- Show debug information
 
-#### Alternative: Manual Compilation + Dart Server
+#### Running on Specific Platforms
 
-1. Compile Dart to JavaScript:
+**iOS Simulator:**
 ```bash
-dart compile js lib/main.dart -o web/main.dart.js
+flutter run -d ios
 ```
 
-2. Serve using the included Dart server:
+**Android Emulator:**
 ```bash
-dart run bin/serve.dart
+flutter run -d android
 ```
 
-Or specify a custom port:
+**Web (for testing):**
 ```bash
-dart run bin/serve.dart 3000
+flutter run -d chrome
 ```
 
-This uses a pure Dart HTTP server (no Python or Node.js needed!).
-
-#### Build for Production
-
+**Tablet/Physical Device:**
 ```bash
-dart compile js lib/main.dart -o web/main.dart.js --minify
+flutter devices  # List available devices
+flutter run -d <device-id>
 ```
 
-This creates an optimized, minified JavaScript file.
+### Building for Production
+
+#### Android APK
+```bash
+flutter build apk --release
+```
+
+#### iOS
+```bash
+flutter build ios --release
+```
+
+#### Web
+```bash
+flutter build web --release
+```
 
 ### Project Structure
 
 ```
 RollTrackFrontend/
 ├── lib/
-│   └── main.dart          # Main Dart application code
-├── web/
-│   ├── index.html         # HTML entry point
-│   └── styles.css         # CSS styles
-├── pubspec.yaml           # Dart package configuration
-└── analysis_options.yaml  # Dart analyzer configuration
+│   ├── main.dart              # App entry point
+│   ├── models/
+│   │   └── class_model.dart   # Class data model
+│   └── screens/
+│       ├── landing_screen.dart    # Welcome/QR code screen
+│       └── classes_screen.dart    # Classes list screen
+├── pubspec.yaml               # Flutter dependencies
+└── analysis_options.yaml      # Linter configuration
 ```
+
+### Features
+
+- **Landing Screen**: Welcome page with QR code and "Touch" button
+- **Classes Screen**: Grid view of martial arts classes with details
+- **Tablet Optimized**: Responsive layout designed for tablet use
+- **Navigation**: Smooth transitions between screens
+- **QR Code**: Real QR code generation using qr_flutter package
 
 ### Development
 
-- Edit `lib/main.dart` to modify your application logic
-- Edit `web/index.html` to modify the HTML structure
-- Edit `web/styles.css` to modify the styling
+- Edit `lib/screens/` to modify screen layouts
+- Edit `lib/models/` to modify data models
+- Hot reload is enabled - save files to see changes instantly
 
 ### Adding Dependencies
 
 Add dependencies to `pubspec.yaml` and run:
 
 ```bash
-dart pub get
+flutter pub get
 ```
+
+### Key Dependencies
+
+- `flutter`: Core Flutter framework
+- `qr_flutter`: QR code generation and display
+- `cupertino_icons`: iOS-style icons
