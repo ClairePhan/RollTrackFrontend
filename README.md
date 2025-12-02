@@ -11,6 +11,9 @@ A Flutter mobile app for RollTrack - martial arts class tracking, optimized for 
 
 ### Running the Application
 
+#### How to Install Flutter
+- Visit https://docs.flutter.dev/get-started/quick and follow directions for your device to install Flutter and Dart
+
 #### Development Mode
 
 1. Get dependencies:
