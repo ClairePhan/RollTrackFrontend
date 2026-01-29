@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import '../models/class_model.dart';
 import '../models/person_model.dart';
+import 'people_and_classes_screen.dart';
 
 
 
 
 class PhoneInputScreen extends StatefulWidget {
-  final ClassModel classModel;
+  final ClassModel? classModel;
 
   const PhoneInputScreen({
     super.key,
-    required this.classModel,
+    this.classModel,
   });
 
   @override
@@ -22,6 +22,18 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
   static final List<PersonModel> people = [
     PersonModel(
       name: 'Hokulani Topping',
+      phoneNumber: '8084222222',
+    ),
+    PersonModel(
+      name: 'Satoru Gojo',
+      phoneNumber: '8084222222',
+    ),
+    PersonModel(
+      name: 'Yuji Itadori',
+      phoneNumber: '8084222222',
+    ),
+    PersonModel(
+      name: 'Megumi Fushiguro',
       phoneNumber: '8084222222',
     ),
   ];
@@ -37,57 +49,61 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
   }
 
   void _handleSubmit() {
-    if (_formKey.currentState!.validate()) {
-      setState(() {
-        _isLoading = true;
-      });
-
-      // Simulate API call or processing
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          setState(() {
-            _isLoading = false;
-          });
-
-          final enteredPhone = _phoneController.text.trim();
-          final matchingPeople = people.where(
-            (p) => p.phoneNumber == enteredPhone,
-          ).toList();
-
-          if (matchingPeople.isNotEmpty) {
-            final person = matchingPeople.first;
-            // Phone number found - show success message
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Successfully checked in ${person.name} to ${widget.classModel.name}',
-                ),
-                backgroundColor: Colors.green,
-                duration: const Duration(seconds: 3),
-              ),
-            );
-
-            // Navigate back to classes screen after a delay
-            Future.delayed(const Duration(seconds: 2), () {
-              if (mounted) {
-                Navigator.pop(context);
-              }
-            });
-          } else {
-            // Phone number not found - show error message
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Phone number not found. Please check your number and try again.',
-                ),
-                backgroundColor: Colors.red,
-                duration: Duration(seconds: 3),
-              ),
-            );
-          }
-        }
-      });
+    final enteredPhone = _phoneController.text.trim();
+    
+    if (enteredPhone.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Please enter a phone number',
+          ),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 2),
+        ),
+      );
+      return;
     }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    // Simulate API call or processing
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+
+        final matchingPeople = people.where(
+          (p) => p.phoneNumber == enteredPhone,
+        ).toList();
+
+        if (matchingPeople.isNotEmpty) {
+          // Phone number found - navigate to people and classes screen
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PeopleAndClassesScreen(
+                phoneNumber: enteredPhone,
+                people: matchingPeople,
+              ),
+            ),
+          );
+        } else {
+          // Phone number not found - show error message
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Phone number not found. Please check your number and try again.',
+              ),
+              backgroundColor: Colors.red,
+              duration: Duration(seconds: 3),
+            ),
+          );
+        }
+      }
+    });
   }
 
   @override
@@ -122,7 +138,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
 
                 const SizedBox(height: 32),
 
-                // Class Name Header
+                // Title Header
                 TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.0, end: 1.0),
                   duration: const Duration(milliseconds: 800),
@@ -136,9 +152,9 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                       ),
                     );
                   },
-                  child: Text(
-                    widget.classModel.name,
-                    style: const TextStyle(
+                  child: const Text(
+                    'Check In',
+                    style: TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.w700,
                       color: Colors.white,
@@ -151,41 +167,6 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                       ],
                     ),
                     textAlign: TextAlign.center,
-                  ),
-                ),
-
-                const SizedBox(height: 16),
-
-                // Class Details Card
-                Card(
-                  elevation: 8,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        _DetailRow(
-                          icon: Icons.person,
-                          label: 'Instructor',
-                          value: widget.classModel.instructor,
-                        ),
-                        const SizedBox(height: 16),
-                        _DetailRow(
-                          icon: Icons.access_time,
-                          label: 'Time',
-                          value: widget.classModel.time,
-                        ),
-                        const SizedBox(height: 16),
-                        _DetailRow(
-                          icon: Icons.location_on,
-                          label: 'Location',
-                          value: widget.classModel.location,
-                        ),
-                      ],
-                    ),
                   ),
                 ),
 
@@ -221,52 +202,72 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
-                          TextFormField(
-                            controller: _phoneController,
-                            keyboardType: TextInputType.phone,
-                            inputFormatters: [
-                              FilteringTextInputFormatter.digitsOnly,
-                              LengthLimitingTextInputFormatter(15),
-                            ],
-                            decoration: InputDecoration(
-                              labelText: 'Phone Number',
-                              hintText: '(123) 456-7890',
-                              prefixIcon: const Icon(Icons.phone),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              filled: true,
-                              fillColor: Colors.grey[50],
+                          
+                          // Phone Number Display
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 20,
                             ),
-                            validator: (value) {
-                              if (value == null || value.isEmpty) {
-                                return 'Please enter your phone number';
-                              }
-                              if (value.length < 10) {
-                                return 'Phone number must be at least 10 digits';
-                              }
-                              return null;
-                            },
-                            autofocus: true,
+                            decoration: BoxDecoration(
+                              color: Colors.grey[50],
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: Colors.grey[300]!,
+                                width: 2,
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.phone,
+                                  color: Color(0xFF667eea),
+                                  size: 28,
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Text(
+                                    _phoneController.text.isEmpty
+                                        ? 'Enter your phone number'
+                                        : _phoneController.text,
+                                    style: TextStyle(
+                                      fontSize: 32,
+                                      fontWeight: FontWeight.w600,
+                                      color: _phoneController.text.isEmpty
+                                          ? Colors.grey[400]
+                                          : Colors.black87,
+                                      letterSpacing: 2,
+                                    ),
+                                  ),
+                                ),
+                                if (_phoneController.text.isNotEmpty)
+                                  IconButton(
+                                    onPressed: () {
+                                      setState(() {
+                                        _phoneController.clear();
+                                      });
+                                    },
+                                    icon: const Icon(
+                                      Icons.clear,
+                                      color: Colors.grey,
+                                      size: 28,
+                                    ),
+                                  ),
+                              ],
+                            ),
                           ),
-                          const SizedBox(height: 32),
+                          
+                          const SizedBox(height: 40),
+                          
+                          // Search Button
                           SizedBox(
                             width: double.infinity,
-                            child: ElevatedButton(
+                            child: ElevatedButton.icon(
                               onPressed: _isLoading ? null : _handleSubmit,
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
-                                backgroundColor: const Color(0xFF667eea),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                elevation: 4,
-                              ),
-                              child: _isLoading
+                              icon: _isLoading
                                   ? const SizedBox(
-                                      height: 20,
                                       width: 20,
+                                      height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
                                         valueColor: AlwaysStoppedAnimation<Color>(
@@ -274,15 +275,33 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                                         ),
                                       ),
                                     )
-                                  : const Text(
-                                      'Check In',
-                                      style: TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
+                                  : const Icon(Icons.search, size: 28),
+                              label: Text(
+                                _isLoading ? 'Searching...' : 'Search',
+                                style: const TextStyle(
+                                  fontSize: 24,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 20,
+                                  horizontal: 32,
+                                ),
+                                backgroundColor: const Color(0xFF667eea),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                                elevation: 4,
+                              ),
                             ),
                           ),
+                          
+                          const SizedBox(height: 24),
+                          
+                          // Custom Number Pad
+                          _buildNumberPad(),
                         ],
                       ),
                     ),
@@ -295,50 +314,116 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       ),
     );
   }
-}
 
-class _DetailRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-
-  const _DetailRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, color: const Color(0xFF667eea), size: 24),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                label,
-                style: const TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                  color: Colors.grey,
-                ),
+  Widget _buildNumberPad() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.1),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          // Number buttons 1-9
+          for (int row = 0; row < 3; row++)
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  for (int col = 0; col < 3; col++)
+                    _buildNumberButton(
+                      number: (row * 3 + col + 1).toString(),
+                    ),
+                ],
               ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w500,
-                  color: Colors.black87,
-                ),
-              ),
-            ],
+            ),
+          // Bottom row: 0, backspace
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                _buildNumberButton(number: '0'),
+                _buildBackspaceButton(),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildNumberButton({required String number}) {
+    return SizedBox(
+      width: 120,
+      height: 120,
+      child: ElevatedButton(
+        onPressed: () {
+          if (_phoneController.text.length < 15) {
+            setState(() {
+              _phoneController.text += number;
+            });
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: const Color(0xFF667eea),
+          elevation: 4,
+          shadowColor: Colors.black.withValues(alpha: 0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+            side: BorderSide(
+              color: Colors.grey[300]!,
+              width: 2,
+            ),
           ),
         ),
-      ],
+        child: Text(
+          number,
+          style: const TextStyle(
+            fontSize: 48,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBackspaceButton() {
+    return SizedBox(
+      width: 120,
+      height: 120,
+      child: ElevatedButton(
+        onPressed: () {
+          if (_phoneController.text.isNotEmpty) {
+            setState(() {
+              _phoneController.text = _phoneController.text
+                  .substring(0, _phoneController.text.length - 1);
+            });
+          }
+        },
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFF667eea),
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: Colors.black.withValues(alpha: 0.2),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
+        child: const Icon(
+          Icons.backspace,
+          size: 40,
+        ),
+      ),
     );
   }
 }

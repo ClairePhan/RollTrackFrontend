@@ -1,0 +1,113 @@
+Flutter crash report.
+Please report a bug at https://github.com/flutter/flutter/issues.
+
+## command
+
+flutter pub get --no-example
+
+## exception
+
+FileSystemException: FileSystemException: Cannot open file, path = '/Users/hokulanitopping/Desktop/RollTrackFrontend/.dart_tool/dartpad/web_plugin_registrant.dart' (OS Error: Operation timed out, errno = 60)
+
+```
+#0      _checkForErrorResponse (dart:io/common.dart:58:9)
+#1      _File.open.<anonymous closure> (dart:io/file_impl.dart:441:7)
+#2      _rootRunUnary (dart:async/zone.dart:1538:47)
+#3      _CustomZone.runUnary (dart:async/zone.dart:1429:19)
+<asynchronous suspension>
+#4      _File.writeAsBytes.<anonymous closure> (dart:io/file_impl.dart:731:34)
+<asynchronous suspension>
+#5      ForwardingFile.writeAsString (package:file/src/forwarding/forwarding_file.dart:136:12)
+<asynchronous suspension>
+#6      ErrorHandlingFile.writeAsString.<anonymous closure> (package:flutter_tools/src/base/error_handling_io.dart:238:9)
+<asynchronous suspension>
+#7      _run (package:flutter_tools/src/base/error_handling_io.dart:511:12)
+<asynchronous suspension>
+#8      _renderTemplateToFile (package:flutter_tools/src/flutter_plugins.dart:41:3)
+<asynchronous suspension>
+#9      _writeWebPluginRegistrant (package:flutter_tools/src/flutter_plugins.dart:1021:3)
+<asynchronous suspension>
+#10     injectBuildTimePluginFilesForWebPlatform (package:flutter_tools/src/flutter_plugins.dart:1224:3)
+<asynchronous suspension>
+#11     WebProject.ensureReadyForPlatformSpecificTooling (package:flutter_tools/src/project.dart:1045:5)
+<asynchronous suspension>
+#12     FlutterProject.ensureReadyForPlatformSpecificTooling (package:flutter_tools/src/project.dart:396:7)
+<asynchronous suspension>
+#13     PackagesGetCommand.runCommand (package:flutter_tools/src/commands/packages.dart:383:7)
+<asynchronous suspension>
+#14     FlutterCommand.run.<anonymous closure> (package:flutter_tools/src/runner/flutter_command.dart:1563:27)
+<asynchronous suspension>
+#15     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#16     CommandRunner.runCommand (package:args/command_runner.dart:212:13)
+<asynchronous suspension>
+#17     FlutterCommandRunner.runCommand.<anonymous closure> (package:flutter_tools/src/runner/flutter_command_runner.dart:494:9)
+<asynchronous suspension>
+#18     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#19     FlutterCommandRunner.runCommand (package:flutter_tools/src/runner/flutter_command_runner.dart:431:5)
+<asynchronous suspension>
+#20     run.<anonymous closure>.<anonymous closure> (package:flutter_tools/runner.dart:98:11)
+<asynchronous suspension>
+#21     AppContext.run.<anonymous closure> (package:flutter_tools/src/base/context.dart:154:19)
+<asynchronous suspension>
+#22     main (package:flutter_tools/executable.dart:102:3)
+<asynchronous suspension>
+```
+
+## flutter doctor
+
+```
+[✓] Flutter (Channel stable, 3.32.1, on macOS 26.0.1 25A362 darwin-arm64, locale en-US) [806ms]
+    • Flutter version 3.32.1 on channel stable at /Users/hokulanitopping/Development/flutter
+    • Upstream repository https://github.com/flutter/flutter.git
+    • Framework revision b25305a883 (8 months ago), 2025-05-29 10:40:06 -0700
+    • Engine revision 1425e5e9ec
+    • Dart version 3.8.1
+    • DevTools version 2.45.1
+
+[✓] Android toolchain - develop for Android devices (Android SDK version 35.0.1) [2.7s]
+    • Android SDK at /Users/hokulanitopping/Library/Android/sdk
+    • Platform android-35, build-tools 35.0.1
+    • Java binary at: /Applications/Android Studio.app/Contents/jbr/Contents/Home/bin/java
+      This is the JDK bundled with the latest Android Studio installation on this machine.
+      To manually set the JDK path, use: `flutter config --jdk-dir="path/to/jdk"`.
+    • Java version OpenJDK Runtime Environment (build 21.0.6+-13368085-b895.109)
+    • All Android licenses accepted.
+
+[✓] Xcode - develop for iOS and macOS (Xcode 26.2) [5.1s]
+    • Xcode at /Applications/Xcode.app/Contents/Developer
+    • Build 17C52
+    • CocoaPods version 1.16.2
+
+[✓] Chrome - develop for the web [26ms]
+    • Chrome at /Applications/Google Chrome.app/Contents/MacOS/Google Chrome
+
+[✓] Android Studio (version 2024.3) [25ms]
+    • Android Studio at /Applications/Android Studio.app/Contents
+    • Flutter plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/9212-flutter
+    • Dart plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/6351-dart
+    • Java version OpenJDK Runtime Environment (build 21.0.6+-13368085-b895.109)
+
+[✓] IntelliJ IDEA Ultimate Edition (version 2024.2.3) [24ms]
+    • IntelliJ at /Applications/IntelliJ IDEA.app
+    • Flutter plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/9212-flutter
+    • Dart plugin can be installed from:
+      🔨 https://plugins.jetbrains.com/plugin/6351-dart
+
+[✓] Connected device (2 available) [12.6s]
+    • macOS (desktop) • macos  • darwin-arm64   • macOS 26.0.1 25A362 darwin-arm64
+    • Chrome (web)    • chrome • web-javascript • Google Chrome 143.0.7499.193
+
+[!] Network resources [33ms]
+    ✗ A network error occurred while checking "https://pub.dev/": Failed host lookup: 'pub.dev'
+    ✗ A network error occurred while checking "https://storage.googleapis.com/": Failed host lookup: 'storage.googleapis.com'
+    ✗ A network error occurred while checking "https://maven.google.com/": Failed host lookup: 'maven.google.com'
+    ✗ A network error occurred while checking "https://cocoapods.org/": Failed host lookup: 'cocoapods.org'
+    ✗ A network error occurred while checking "https://github.com/": Failed host lookup: 'github.com'
+
+! Doctor found issues in 1 category.
+```

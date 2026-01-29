@@ -2,6 +2,8 @@
 
 A Flutter mobile app for RollTrack - martial arts class tracking, optimized for tablets.
 
+Built with MaterialApp class for easier and nicer UI
+
 ## Getting Started
 
 ### Prerequisites
