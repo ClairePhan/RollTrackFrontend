@@ -23,3 +23,8 @@ Thumbs.db
 node_modules/
 package-lock.json
 
+# Environment variables (NEVER commit these!)
+.env
+backend/.env
+*.env
+!.env.example
