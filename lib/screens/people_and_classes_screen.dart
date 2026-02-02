@@ -3,6 +3,7 @@ import '../models/person_model.dart';
 import '../models/class_model.dart';
 import 'checkin_confirmation_screen.dart';
 import 'landing_screen.dart';
+import 'gamification_screen.dart';
 
 class PeopleAndClassesScreen extends StatefulWidget {
   final String phoneNumber;
@@ -346,14 +347,14 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                                     ),
                                   );
                                   
-                                  // Navigate back to landing screen after a delay
+                                  // Navigate to gamification screen after a delay
                                   final navigatorContext = context;
                                   Future.delayed(const Duration(seconds: 2), () {
                                     if (mounted && navigatorContext.mounted) {
                                       Navigator.pushAndRemoveUntil(
                                         navigatorContext,
                                         MaterialPageRoute(
-                                          builder: (context) => const LandingScreen(),
+                                          builder: (context) => const GamificationScreen(),
                                         ),
                                         (route) => false,
                                       );
