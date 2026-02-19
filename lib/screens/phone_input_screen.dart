@@ -52,15 +52,11 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     final enteredPhone = _phoneController.text.trim();
     
     if (enteredPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please enter a phone number',
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      _showCenteredErrorDialog('Please enter a phone number');
+      return;
+    }
+    if (enteredPhone.length < 10) {
+      _showCenteredErrorDialog('Phone number is too short');
       return;
     }
 
@@ -92,18 +88,43 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           );
         } else {
           // Phone number not found - show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Phone number not found. Please check your number and try again.',
-              ),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
+          _showCenteredErrorDialog(
+            'Phone number not found. Please check your number and try again.',
           );
         }
       }
     });
+  }
+
+  Future<void> _showCenteredErrorDialog(String message) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFE53935),
+          title: const Text(
+            'Error',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.white),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'OK',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
