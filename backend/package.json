@@ -1,0 +1,28 @@
+{
+  "name": "rolltrack-backend",
+  "version": "1.0.0",
+  "description": "Backend API for RollTrack - martial arts class tracking system",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "setup-db": "node setup-db.js"
+  },
+  "keywords": [
+    "rolltrack",
+    "api",
+    "mongodb"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "mongodb": "^7.0.0",
+    "dotenv": "^16.3.1",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  }
+}
