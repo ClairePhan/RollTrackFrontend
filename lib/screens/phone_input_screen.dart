@@ -209,7 +209,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                           const Text(
                             'Enter Your Phone Number',
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 30,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF667eea),
                             ),
@@ -218,7 +218,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                           const Text(
                             'Your phone number will serve as your ID',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 25,
                               color: Colors.grey,
                             ),
                           ),
@@ -372,6 +372,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                const SizedBox(width: 120, height: 120),
                 _buildNumberButton(number: '0'),
                 _buildBackspaceButton(),
               ],
