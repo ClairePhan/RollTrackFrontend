@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
 import '../models/person_model.dart';
@@ -41,14 +42,24 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
   final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  Timer? _inactivityTimer;
 
   @override
   void dispose() {
+    _inactivityTimer?.cancel();
     _phoneController.dispose();
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _resetInactivityTimer();
+    _phoneController.addListener(_resetInactivityTimer);
+  }
+
   void _handleSubmit() {
+    _resetInactivityTimer();
     final enteredPhone = _phoneController.text.trim();
     
     if (enteredPhone.isEmpty) {
@@ -96,6 +107,16 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     });
   }
 
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(const Duration(seconds: 10), () {
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    });
+  }
+
   Future<void> _showCenteredErrorDialog(String message) {
     return showDialog<void>(
       context: context,
@@ -130,32 +151,34 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-            ],
+      body: Listener(
+        onPointerDown: (_) => _resetInactivityTimer(),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF667eea),
+                Color(0xFF764ba2),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Back Button
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    iconSize: 32,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Back Button
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      iconSize: 32,
+                    ),
                   ),
-                ),
 
                 const SizedBox(height: 32),
 
@@ -264,6 +287,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                                 if (_phoneController.text.isNotEmpty)
                                   IconButton(
                                     onPressed: () {
+                                      _resetInactivityTimer();
                                       setState(() {
                                         _phoneController.clear();
                                       });
@@ -333,6 +357,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -389,6 +414,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       height: 120,
       child: ElevatedButton(
         onPressed: () {
+          _resetInactivityTimer();
           if (_phoneController.text.length < 15) {
             setState(() {
               _phoneController.text += number;
@@ -425,6 +451,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       height: 120,
       child: ElevatedButton(
         onPressed: () {
+          _resetInactivityTimer();
           if (_phoneController.text.isNotEmpty) {
             setState(() {
               _phoneController.text = _phoneController.text
