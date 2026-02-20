@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
 import '../models/class_model.dart';
-import 'checkin_confirmation_screen.dart';
-import 'landing_screen.dart';
 import 'gamification_screen.dart';
 
 class PeopleAndClassesScreen extends StatefulWidget {
@@ -220,14 +218,12 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                                   ),
                                   child: ElevatedButton(
                                     onPressed: () {
-                                      Navigator.push(
+                                      // Auto check-in and go to gamification screen
+                                      Navigator.pushReplacement(
                                         context,
                                         MaterialPageRoute(
                                           builder: (context) =>
-                                              CheckInConfirmationScreen(
-                                            person: person,
-                                            phoneNumber: widget.phoneNumber,
-                                          ),
+                                              const GamificationScreen(),
                                         ),
                                       );
                                     },
