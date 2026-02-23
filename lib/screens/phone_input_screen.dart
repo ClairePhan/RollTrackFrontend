@@ -117,6 +117,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     });
   }
 
+
   Future<void> _showCenteredErrorDialog(String message) {
     return showDialog<void>(
       context: context,

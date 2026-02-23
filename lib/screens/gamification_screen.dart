@@ -66,24 +66,26 @@ class _GamificationScreenState extends State<GamificationScreen>
     final verticalSpacing = screenSize.height * 0.05;
 
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-            ],
-          ),
-        ),
-        child: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
+      body: Stack(
+        children: [
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  Color(0xFF667eea),
+                  Color(0xFF764ba2),
+                ],
+              ),
+            ),
+            child: SafeArea(
+              child: Center(
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
                   // Trophy/Achievement Icon
                   Icon(
                     Icons.emoji_events,
@@ -150,12 +152,14 @@ class _GamificationScreenState extends State<GamificationScreen>
                   SizedBox(height: verticalSpacing * 1.5),
 
                   // Spacer to keep layout balanced (no manual button)
-                  SizedBox(height: verticalSpacing),
-                ],
+                      SizedBox(height: verticalSpacing),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }
