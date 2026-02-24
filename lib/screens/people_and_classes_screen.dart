@@ -134,7 +134,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: 24.0),
             child: Text(
-              'People',
+              'Family',
               style: TextStyle(
                 fontSize: 36,
                 fontWeight: FontWeight.w700,
