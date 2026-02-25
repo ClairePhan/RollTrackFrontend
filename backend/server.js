@@ -220,6 +220,21 @@ app.post('/api/checkin', async (req, res) => {
     
     try {
       const result = await collection.insertOne(checkin);
+
+      // Increment classesAttended count for the student, if we have a studentId
+      if (studentId) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          const studentsCollection = db.collection('students');
+          await studentsCollection.updateOne(
+            { _id: new ObjectId(studentId) },
+            { $inc: { classesAttended: 1 } }
+          );
+        } catch (updateError) {
+          console.error('Failed to increment classesAttended for student', studentId, updateError);
+        }
+      }
+
       res.status(201).json({ 
         message: 'Check-in successful', 
         id: result.insertedId,
@@ -237,6 +252,51 @@ app.post('/api/checkin', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to check in', message: error.message });
+  }
+});
+
+// Undo a check-in and decrement classesAttended
+app.post('/api/checkin/undo', async (req, res) => {
+  try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database not connected' });
+    }
+
+    const { studentId, classId } = req.body;
+
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+
+    const collection = db.collection('attendance');
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+    const query = { studentId, date };
+    if (classId) {
+      query.classId = classId;
+    }
+
+    const deleted = await collection.findOneAndDelete(query);
+
+    if (!deleted.value) {
+      return res.status(404).json({ error: 'Check-in not found' });
+    }
+
+    // Decrement classesAttended for the student
+    try {
+      const { ObjectId } = await import('mongodb');
+      const studentsCollection = db.collection('students');
+      await studentsCollection.updateOne(
+        { _id: new ObjectId(studentId) },
+        { $inc: { classesAttended: -1 } }
+      );
+    } catch (updateError) {
+      console.error('Failed to decrement classesAttended for student', studentId, updateError);
+    }
+
+    res.json({ message: 'Check-in undone successfully' });
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to undo check-in', message: error.message });
   }
 });
 

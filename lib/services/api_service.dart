@@ -78,6 +78,29 @@ class ApiService {
       );
     }
   }
+
+  Future<void> undoCheckIn({
+    required String? studentId,
+    required String? classId,
+  }) async {
+    final uri = Uri.parse('$_baseUrl/api/checkin/undo');
+    final body = <String, dynamic>{
+      if (studentId != null && studentId.isNotEmpty) 'studentId': studentId,
+      if (classId != null && classId.isNotEmpty) 'classId': classId,
+    };
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(body),
+    );
+    if (response.statusCode != 200) {
+      throw ApiException(
+        'Failed to undo check-in',
+        statusCode: response.statusCode,
+        body: response.body,
+      );
+    }
+  }
 }
 
 class ApiException implements Exception {

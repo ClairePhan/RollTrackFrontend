@@ -556,13 +556,30 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                         ),
                         backgroundColor: const Color(0xFF667eea).withValues(alpha: 0.2),
                         deleteIcon: const Icon(Icons.close, size: 16),
-                        onDeleted: () {
-                          setState(() {
-                            checkedInPeople[classKey]!.remove(person);
-                            if (checkedInPeople[classKey]!.isEmpty) {
-                              checkedInPeople.remove(classKey);
-                            }
-                          });
+                        onDeleted: () async {
+                          try {
+                            await _api.undoCheckIn(
+                              studentId: person.id,
+                              classId: classItem.id,
+                            );
+                            if (!mounted) return;
+                            setState(() {
+                              checkedInPeople[classKey]!.remove(person);
+                              if (checkedInPeople[classKey]!.isEmpty) {
+                                checkedInPeople.remove(classKey);
+                              }
+                            });
+                          } catch (e) {
+                            if (!mounted) return;
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.toString().replaceFirst('ApiException: ', ''),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
                         },
                       );
                     }).toList(),
