@@ -3,19 +3,16 @@ import { MongoClient } from 'mongodb';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection
 let db;
 let client;
 
@@ -38,7 +35,7 @@ async function connectToMongoDB() {
     return db;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    // Helpful hints for common issues
+    
     if (error.message && error.message.includes('querySrv') && error.message.includes('ECONNREFUSED')) {
       console.error('');
       console.error('💡 DNS SRV lookup failed. This often means:');
@@ -295,27 +292,14 @@ app.get('/api/attendance/stats', async (req, res) => {
   }
 });
 
-// Start server
 async function startServer() {
   try {
-    // Connect to MongoDB first
     await connectToMongoDB();
-
-    const server = app.listen(PORT, () => {
+    
+    app.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📝 API endpoints available at http://localhost:${PORT}/api`);
-    });
-
-    server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} is already in use.`);
-        console.error('   Stop the other process using this port, or set PORT to a different number in .env');
-        console.error('   On Windows, find process: Get-NetTCPConnection -LocalPort ' + PORT);
-      } else {
-        console.error('❌ Server error:', err.message);
-      }
-      process.exit(1);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
@@ -343,5 +327,4 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-// Start the server
 startServer();
