@@ -62,6 +62,10 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       });
 
       if (matchingPeople.isNotEmpty) {
+        // Stop the inactivity timer once we move to the next screen
+        _inactivityTimer?.cancel();
+        _inactivityTimer = null;
+
         Navigator.push(
           context,
           MaterialPageRoute(

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
 import '../models/class_model.dart';
@@ -24,6 +25,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
   bool _classesLoading = true;
   String? _classesError;
   final _api = ApiService();
+  Timer? _inactivityTimer;
 
   bool get _isSinglePerson => widget.people.length == 1;
 
@@ -38,6 +40,13 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
   void initState() {
     super.initState();
     _loadClasses();
+    _resetInactivityTimer();
+  }
+
+  @override
+  void dispose() {
+    _inactivityTimer?.cancel();
+    super.dispose();
   }
 
   Future<void> _loadClasses() async {
@@ -76,6 +85,14 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
     }
   }
 
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(const Duration(seconds: 20), () {
+      if (!mounted) return;
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    });
+  }
+
   String _classKey(ClassModel c) => c.id ?? c.displayName;
 
   Future<void> _handleDrop(PersonModel person, ClassModel classItem) async {
@@ -90,10 +107,14 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
         className: classItem.displayName,
       );
       if (!mounted) return;
+      final attendedCount = (person.classesAttended ?? 0) + 1;
       setState(() {
         checkedInPeople[key] ??= [];
         checkedInPeople[key]!.add(person);
       });
+      if (!_isSinglePerson) {
+        _showCongratsPopup(person, attendedCount);
+      }
       if (_isSinglePerson) {
         Navigator.pushAndRemoveUntil(
           context,
@@ -112,26 +133,94 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
     }
   }
 
+  void _showCongratsPopup(PersonModel person, int attendedCount) {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (dialogContext) {
+        // Auto-close after 4 seconds
+        Future.delayed(const Duration(seconds: 4), () {
+          if (Navigator.of(dialogContext).canPop()) {
+            Navigator.of(dialogContext).pop();
+          }
+        });
+
+        return Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 24),
+              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.2),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(
+                    Icons.emoji_events,
+                    color: Color(0xFFFFC107),
+                    size: 48,
+                  ),
+                  const SizedBox(height: 16),
+                  const Text(
+                    'Congrats!',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'You have attended $attendedCount classes!',
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      color: Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-            ],
+      body: Listener(
+        onPointerDown: (_) => _resetInactivityTimer(),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF667eea),
+                Color(0xFF764ba2),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: Row(
-            children: [
-              Expanded(flex: 2, child: _buildPeoplePanel()),
-              Expanded(flex: 3, child: _buildClassesPanel()),
-            ],
+          child: SafeArea(
+            child: Row(
+              children: [
+                Expanded(flex: 2, child: _buildPeoplePanel()),
+                Expanded(flex: 3, child: _buildClassesPanel()),
+              ],
+            ),
           ),
         ),
       ),
