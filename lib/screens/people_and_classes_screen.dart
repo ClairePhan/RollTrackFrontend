@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
 import '../models/class_model.dart';
+import '../services/api_service.dart';
 import 'gamification_screen.dart';
 
 class PeopleAndClassesScreen extends StatefulWidget {
@@ -18,76 +19,101 @@ class PeopleAndClassesScreen extends StatefulWidget {
 }
 
 class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
-  // Track which people are checked into which classes
   final Map<String, List<PersonModel>> checkedInPeople = {};
+  List<ClassModel> _todaysClasses = [];
+  bool _classesLoading = true;
+  String? _classesError;
+  final _api = ApiService();
+
   bool get _isSinglePerson => widget.people.length == 1;
 
-  // Get today's classes based on current day
-  List<ClassModel> getTodaysClasses() {
-    // Sample classes data - in production this would come from an API
-    final allClasses = [
-      ClassModel(
-        name: 'Judo',
-        instructor: 'Sung Jin Woo',
-        time: 'M/W/F',
-        location: 'Dojo A',
-        schedule: 'M/W/F',
-        timeRange: '8:00 PM - 9:00',
-      ),
-      ClassModel(
-        name: 'Kickboxing',
-        instructor: 'Mike Tyson',
-        time: 'M/W/F',
-        location: 'Dojo B',
-        schedule: 'M/W/F',
-        timeRange: '8:00 PM - 9:00',
-      ),
-      ClassModel(
-        name: 'Karate',
-        instructor: 'Sensei Martinez',
-        time: 'Mon/Wed',
-        location: 'Dojo A',
-        schedule: 'M/W',
-        timeRange: '6:00 PM - 7:00',
-      ),
-      ClassModel(
-        name: 'Brazilian Jiu-Jitsu',
-        instructor: 'Professor Silva',
-        time: 'Tue/Thu',
-        location: 'Dojo B',
-        schedule: 'T/Th',
-        timeRange: '7:00 PM - 8:00',
-      ),
-    ];
+  static const List<String> _weekdayNames = [
+    'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'
+  ];
+  static const List<String> _weekdayNamesLong = [
+    'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'
+  ];
 
-    // Dummy data: always show all classes
-    return allClasses;
+  @override
+  void initState() {
+    super.initState();
+    _loadClasses();
   }
 
-  void _handleDrop(PersonModel person, ClassModel classItem) {
+  Future<void> _loadClasses() async {
     setState(() {
-      final className = classItem.name;
-      if (!checkedInPeople.containsKey(className)) {
-        checkedInPeople[className] = [];
-      }
-      // Only add if not already checked in
-      if (!checkedInPeople[className]!.contains(person)) {
-        checkedInPeople[className]!.add(person);
-      }
+      _classesLoading = true;
+      _classesError = null;
     });
-    if (_isSinglePerson) {
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => const GamificationScreen()),
-        (route) => false,
+    try {
+      final allClasses = await _api.getClasses();
+      if (!mounted) return;
+      final now = DateTime.now();
+      final todayIndex = now.weekday - 1; // Monday = 0
+      final todayShort = _weekdayNames[todayIndex];
+      final todayLong = _weekdayNamesLong[todayIndex];
+      final filtered = allClasses.where((c) {
+        for (final d in c.days) {
+          final normalized = d.toString().toLowerCase();
+          if (normalized == todayShort.toLowerCase() ||
+              normalized == todayLong.toLowerCase() ||
+              normalized.startsWith(todayShort.toLowerCase().substring(0, 2))) {
+            return true;
+          }
+        }
+        return false;
+      }).toList();
+      setState(() {
+        _todaysClasses = filtered;
+        _classesLoading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _classesError = 'Could not load classes';
+        _classesLoading = false;
+      });
+    }
+  }
+
+  String _classKey(ClassModel c) => c.id ?? c.displayName;
+
+  Future<void> _handleDrop(PersonModel person, ClassModel classItem) async {
+    final key = _classKey(classItem);
+    if (checkedInPeople[key]?.contains(person) ?? false) return;
+
+    try {
+      await _api.checkIn(
+        studentId: person.id,
+        classId: classItem.id,
+        studentName: person.name,
+        className: classItem.displayName,
+      );
+      if (!mounted) return;
+      setState(() {
+        checkedInPeople[key] ??= [];
+        checkedInPeople[key]!.add(person);
+      });
+      if (_isSinglePerson) {
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => const GamificationScreen()),
+          (route) => false,
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.toString().replaceFirst('ApiException: ', '')),
+          backgroundColor: Colors.red,
+        ),
       );
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final todaysClasses = getTodaysClasses();
-
     return Scaffold(
       body: Container(
         decoration: const BoxDecoration(
@@ -104,7 +130,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
           child: Row(
             children: [
               Expanded(flex: 2, child: _buildPeoplePanel()),
-              Expanded(flex: 3, child: _buildClassesPanel(todaysClasses)),
+              Expanded(flex: 3, child: _buildClassesPanel()),
             ],
           ),
         ),
@@ -247,7 +273,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
     );
   }
 
-  Widget _buildClassesPanel(List<ClassModel> todaysClasses) {
+  Widget _buildClassesPanel() {
     return Container(
       color: Colors.white,
       child: Column(
@@ -276,23 +302,50 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
-              child: todaysClasses.isEmpty
+              child: _classesLoading
                   ? const Center(
-                      child: Text(
-                        'No classes scheduled for today',
-                        style: TextStyle(
-                          fontSize: 18,
-                          color: Colors.grey,
-                        ),
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF667eea)),
                       ),
                     )
-                  : ListView.builder(
-                      itemCount: todaysClasses.length,
-                      itemBuilder: (context, index) {
-                        final classItem = todaysClasses[index];
-                        return _buildClassCard(classItem, index);
-                      },
-                    ),
+                  : _classesError != null
+                      ? Center(
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                _classesError!,
+                                style: const TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                ),
+                                textAlign: TextAlign.center,
+                              ),
+                              const SizedBox(height: 16),
+                              TextButton(
+                                onPressed: _loadClasses,
+                                child: const Text('Retry'),
+                              ),
+                            ],
+                          ),
+                        )
+                      : _todaysClasses.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No classes scheduled for today',
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  color: Colors.grey,
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
+                              itemCount: _todaysClasses.length,
+                              itemBuilder: (context, index) {
+                                final classItem = _todaysClasses[index];
+                                return _buildClassCard(classItem, index);
+                              },
+                            ),
             ),
           ),
           if (!_isSinglePerson)
@@ -355,8 +408,8 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
   }
 
   Widget _buildClassCard(ClassModel classItem, int index) {
-    final className = classItem.name;
-    final checkedIn = checkedInPeople[className] ?? [];
+    final classKey = _classKey(classItem);
+    final checkedIn = checkedInPeople[classKey] ?? [];
 
     return DragTarget<PersonModel>(
       onAcceptWithDetails: (DragTargetDetails<PersonModel> details) {
@@ -392,7 +445,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                         children: [
                           // Class Name
                           Text(
-                            classItem.name,
+                            classItem.displayName,
                             style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w700,
@@ -407,7 +460,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                                   size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
-                                classItem.schedule ?? classItem.time,
+                                classItem.scheduleDisplay,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,
@@ -422,7 +475,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                               const Icon(Icons.access_time, size: 18, color: Colors.grey),
                               const SizedBox(width: 8),
                               Text(
-                                classItem.timeRange ?? classItem.time,
+                                classItem.timeRangeDisplay,
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,
@@ -460,13 +513,13 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(
-                            _getClassIcon(classItem.name),
+                            _getClassIcon(classItem.displayName),
                             size: 48,
                             color: const Color(0xFF667eea),
                           ),
                           const SizedBox(height: 4),
                           Text(
-                            classItem.name.toUpperCase(),
+                            classItem.displayName.toUpperCase(),
                             style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.w600,
@@ -505,9 +558,9 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                         deleteIcon: const Icon(Icons.close, size: 16),
                         onDeleted: () {
                           setState(() {
-                            checkedInPeople[className]!.remove(person);
-                            if (checkedInPeople[className]!.isEmpty) {
-                              checkedInPeople.remove(className);
+                            checkedInPeople[classKey]!.remove(person);
+                            if (checkedInPeople[classKey]!.isEmpty) {
+                              checkedInPeople.remove(classKey);
                             }
                           });
                         },

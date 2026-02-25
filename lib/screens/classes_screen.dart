@@ -1,49 +1,47 @@
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
+import '../services/api_service.dart';
 import 'phone_input_screen.dart';
 
-class ClassesScreen extends StatelessWidget {
+class ClassesScreen extends StatefulWidget {
   const ClassesScreen({super.key});
 
-  // Martial arts classes data
-  static final List<ClassModel> classes = [
-    ClassModel(
-      name: 'Karate',
-      instructor: 'Sensei Martinez',
-      time: 'Mon/Wed 6:00 PM',
-      location: 'Dojo A',
-    ),
-    ClassModel(
-      name: 'Brazilian Jiu-Jitsu',
-      instructor: 'Professor Silva',
-      time: 'Tue/Thu 7:00 PM',
-      location: 'Dojo B',
-    ),
-    ClassModel(
-      name: 'Taekwondo',
-      instructor: 'Master Kim',
-      time: 'Mon/Wed/Fri 5:00 PM',
-      location: 'Dojo C',
-    ),
-    ClassModel(
-      name: 'Muay Thai',
-      instructor: 'Kru Johnson',
-      time: 'Tue/Thu 6:30 PM',
-      location: 'Dojo A',
-    ),
-    ClassModel(
-      name: 'Judo',
-      instructor: 'Sensei Tanaka',
-      time: 'Sat 10:00 AM',
-      location: 'Dojo B',
-    ),
-    ClassModel(
-      name: 'Boxing',
-      instructor: 'Coach Williams',
-      time: 'Mon/Wed/Fri 7:00 PM',
-      location: 'Training Room',
-    ),
-  ];
+  @override
+  State<ClassesScreen> createState() => _ClassesScreenState();
+}
+
+class _ClassesScreenState extends State<ClassesScreen> {
+  final _api = ApiService();
+  List<ClassModel> _classes = [];
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadClasses();
+  }
+
+  Future<void> _loadClasses() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    try {
+      final list = await _api.getClasses();
+      if (!mounted) return;
+      setState(() {
+        _classes = list;
+        _loading = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = 'Could not load classes';
+        _loading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -119,21 +117,48 @@ class ClassesScreen extends StatelessWidget {
               
               // Classes Grid
               Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                  child: GridView.builder(
-                    gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                      maxCrossAxisExtent: 400,
-                      mainAxisSpacing: 16,
-                      crossAxisSpacing: 16,
-                      childAspectRatio: 1.2,
-                    ),
-                    itemCount: classes.length,
-                    itemBuilder: (context, index) {
-                      return _ClassCard(classModel: classes[index]);
-                    },
-                  ),
-                ),
+                child: _loading
+                    ? const Center(
+                        child: CircularProgressIndicator(
+                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                        ),
+                      )
+                    : _error != null
+                        ? Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  _error!,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    color: Colors.white70,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 16),
+                                TextButton(
+                                  onPressed: _loadClasses,
+                                  child: const Text('Retry', style: TextStyle(color: Colors.white)),
+                                ),
+                              ],
+                            ),
+                          )
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                            child: GridView.builder(
+                              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+                                maxCrossAxisExtent: 400,
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: 1.2,
+                              ),
+                              itemCount: _classes.length,
+                              itemBuilder: (context, index) {
+                                return _ClassCard(classModel: _classes[index]);
+                              },
+                            ),
+                          ),
               ),
             ],
           ),
@@ -183,7 +208,7 @@ class _ClassCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  classModel.name,
+                  classModel.displayName,
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
@@ -206,7 +231,9 @@ class _ClassCard extends StatelessWidget {
                     ),
                     _DetailRow(
                       label: 'Time:',
-                      value: classModel.time,
+                      value: classModel.timeRangeDisplay.isNotEmpty
+                          ? '${classModel.scheduleDisplay} ${classModel.timeRangeDisplay}'
+                          : classModel.time,
                     ),
                     _DetailRow(
                       label: 'Location:',
