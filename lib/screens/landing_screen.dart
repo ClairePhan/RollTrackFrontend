@@ -7,31 +7,33 @@ class LandingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PhoneInputScreen(),
-            ),
-          );
-        },
-        child: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF667eea),
-                Color(0xFF764ba2),
-              ],
-            ),
-          ),
-          child: SafeArea(
-            child: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+      body: Stack(
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => const PhoneInputScreen(),
+                ),
+              );
+            },
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    Color(0xFF667eea),
+                    Color(0xFF764ba2),
+                  ],
+                ),
+              ),
+              child: SafeArea(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
                   // Check in Title
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: 1.0),
@@ -82,11 +84,13 @@ class LandingScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                ],
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

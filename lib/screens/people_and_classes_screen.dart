@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
 import '../models/class_model.dart';
-import 'checkin_confirmation_screen.dart';
-import 'landing_screen.dart';
+import 'gamification_screen.dart';
 
 class PeopleAndClassesScreen extends StatefulWidget {
   final String phoneNumber;
@@ -21,12 +20,10 @@ class PeopleAndClassesScreen extends StatefulWidget {
 class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
   // Track which people are checked into which classes
   final Map<String, List<PersonModel>> checkedInPeople = {};
+  bool get _isSinglePerson => widget.people.length == 1;
 
   // Get today's classes based on current day
   List<ClassModel> getTodaysClasses() {
-    final today = DateTime.now();
-    final dayOfWeek = today.weekday; // 1 = Monday, 7 = Sunday
-    
     // Sample classes data - in production this would come from an API
     final allClasses = [
       ClassModel(
@@ -63,19 +60,8 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
       ),
     ];
 
-    // Filter classes for today
-    // M=1, T=2, W=3, Th=4, F=5, S=6, Su=7
-    return allClasses.where((classItem) {
-      final schedule = classItem.schedule ?? '';
-      if (dayOfWeek == 1 && schedule.contains('M')) return true; // Monday
-      if (dayOfWeek == 2 && schedule.contains('T') && !schedule.contains('Th')) return true; // Tuesday
-      if (dayOfWeek == 3 && schedule.contains('W')) return true; // Wednesday
-      if (dayOfWeek == 4 && schedule.contains('Th')) return true; // Thursday
-      if (dayOfWeek == 5 && schedule.contains('F')) return true; // Friday
-      if (dayOfWeek == 6 && schedule.contains('S')) return true; // Saturday
-      if (dayOfWeek == 7 && schedule.contains('Su')) return true; // Sunday
-      return false;
-    }).toList();
+    // Dummy data: always show all classes
+    return allClasses;
   }
 
   void _handleDrop(PersonModel person, ClassModel classItem) {
@@ -89,17 +75,13 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
         checkedInPeople[className]!.add(person);
       }
     });
-
-    // Show success message
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          '${person.name} checked into ${classItem.name}',
-        ),
-        backgroundColor: Colors.green,
-        duration: const Duration(seconds: 2),
-      ),
-    );
+    if (_isSinglePerson) {
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => const GamificationScreen()),
+        (route) => false,
+      );
+    }
   }
 
   @override
@@ -121,276 +103,253 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
         child: SafeArea(
           child: Row(
             children: [
-              // Left Panel - People
-              Expanded(
-                flex: 2,
-                child: Container(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Back Button
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: IconButton(
-                          onPressed: () => Navigator.pop(context),
-                          icon: const Icon(Icons.arrow_back, color: Colors.white),
-                          iconSize: 32,
-                        ),
-                      ),
-
-                      const SizedBox(height: 16),
-
-                      // People Title
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Text(
-                          'People',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            decoration: TextDecoration.none,
-                            decorationThickness: 3,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 32),
-
-                      // People List
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: ListView.builder(
-                            itemCount: widget.people.length,
-                            itemBuilder: (context, index) {
-                              final person = widget.people[index];
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 16),
-                                child: Draggable<PersonModel>(
-                                  data: person,
-                                  feedback: Material(
-                                    elevation: 8,
-                                    borderRadius: BorderRadius.circular(12),
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                        horizontal: 24,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: const Color(0xFF667eea),
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: Text(
-                                        person.name,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w600,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  childWhenDragging: Opacity(
-                                    opacity: 0.3,
-                                    child: ElevatedButton(
-                                      onPressed: null,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF667eea),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(
-                                          vertical: 16,
-                                          horizontal: 24,
-                                        ),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        elevation: 2,
-                                      ),
-                                      child: Text(
-                                        person.name,
-                                        style: const TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  child: ElevatedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (context) =>
-                                              CheckInConfirmationScreen(
-                                            person: person,
-                                            phoneNumber: widget.phoneNumber,
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                    style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF667eea),
-                                      foregroundColor: Colors.white,
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 16,
-                                        horizontal: 24,
-                                      ),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      elevation: 2,
-                                    ),
-                                    child: Text(
-                                      person.name,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-
-              // Right Panel - Today's Classes
-              Expanded(
-                flex: 3,
-                child: Container(
-                  color: Colors.white,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
-
-                      // Today's Classes Title
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24.0),
-                        child: Text(
-                          'Todays classes',
-                          style: TextStyle(
-                            fontSize: 36,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.black,
-                            decoration: TextDecoration.none,
-                            decorationThickness: 3,
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      // Classes List
-                      Expanded(
-                        child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                          child: todaysClasses.isEmpty
-                              ? const Center(
-                                  child: Text(
-                                    'No classes scheduled for today',
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                )
-                              : ListView.builder(
-                                  itemCount: todaysClasses.length,
-                                  itemBuilder: (context, index) {
-                                    final classItem = todaysClasses[index];
-                                    return _buildClassCard(classItem, index);
-                                  },
-                                ),
-                        ),
-                      ),
-
-                      // Finish Button
-                      Container(
-                        padding: const EdgeInsets.all(24.0),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.1),
-                              blurRadius: 10,
-                              offset: const Offset(0, -4),
-                            ),
-                          ],
-                        ),
-                        child: SafeArea(
-                          top: false,
-                          child: SizedBox(
-                            width: double.infinity,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                // Show summary and navigate back
-                                final totalCheckedIn = checkedInPeople.values
-                                    .fold<int>(0, (sum, list) => sum + list.length);
-                                
-                                if (totalCheckedIn > 0) {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    SnackBar(
-                                      content: Text(
-                                        'Successfully checked in $totalCheckedIn person${totalCheckedIn > 1 ? 's' : ''}',
-                                      ),
-                                      backgroundColor: Colors.green,
-                                      duration: const Duration(seconds: 2),
-                                    ),
-                                  );
-                                  
-                                  // Navigate back to landing screen after a delay
-                                  final navigatorContext = context;
-                                  Future.delayed(const Duration(seconds: 2), () {
-                                    if (mounted && navigatorContext.mounted) {
-                                      Navigator.pushAndRemoveUntil(
-                                        navigatorContext,
-                                        MaterialPageRoute(
-                                          builder: (context) => const LandingScreen(),
-                                        ),
-                                        (route) => false,
-                                      );
-                                    }
-                                  });
-                                } else {
-                                  // No one checked in, just go back
-                                  Navigator.pop(context);
-                                }
-                              },
-                              style: ElevatedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 20),
-                                backgroundColor: const Color(0xFF667eea),
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                elevation: 4,
-                              ),
-                              child: const Text(
-                                'Finish',
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              Expanded(flex: 2, child: _buildPeoplePanel()),
+              Expanded(flex: 3, child: _buildClassesPanel(todaysClasses)),
             ],
           ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildPeoplePanel() {
+    return Container(
+      color: Colors.white.withValues(alpha: 0.1),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Back Button
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: IconButton(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              iconSize: 32,
+            ),
+          ),
+
+          const SizedBox(height: 16),
+
+          // People Title
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              'People',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                decoration: TextDecoration.none,
+                decorationThickness: 3,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 32),
+
+          // People List
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: ListView.builder(
+                itemCount: widget.people.length,
+                itemBuilder: (context, index) {
+                  final person = widget.people[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 16),
+                    child: Draggable<PersonModel>(
+                      data: person,
+                      feedback: Material(
+                        elevation: 8,
+                        borderRadius: BorderRadius.circular(12),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 24,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF667eea),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Text(
+                            person.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ),
+                      childWhenDragging: Opacity(
+                        opacity: 0.3,
+                        child: ElevatedButton(
+                          onPressed: null,
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF667eea),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 16,
+                              horizontal: 24,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            elevation: 2,
+                          ),
+                          child: Text(
+                            person.name,
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ),
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pushReplacement(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) =>
+                                  const GamificationScreen(),
+                            ),
+                          );
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF667eea),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 16,
+                            horizontal: 24,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 2,
+                        ),
+                        child: Text(
+                          person.name,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildClassesPanel(List<ClassModel> todaysClasses) {
+    return Container(
+      color: Colors.white,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 16),
+
+          // Today's Classes Title
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              'Todays classes',
+              style: TextStyle(
+                fontSize: 36,
+                fontWeight: FontWeight.w700,
+                color: Colors.black,
+                decoration: TextDecoration.none,
+                decorationThickness: 3,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Classes List
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24.0),
+              child: todaysClasses.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'No classes scheduled for today',
+                        style: TextStyle(
+                          fontSize: 18,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: todaysClasses.length,
+                      itemBuilder: (context, index) {
+                        final classItem = todaysClasses[index];
+                        return _buildClassCard(classItem, index);
+                      },
+                    ),
+            ),
+          ),
+          if (!_isSinglePerson)
+            Container(
+              padding: const EdgeInsets.all(24.0),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.1),
+                    blurRadius: 10,
+                    offset: const Offset(0, -4),
+                  ),
+                ],
+              ),
+              child: SafeArea(
+                top: false,
+                child: SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      final totalCheckedIn = checkedInPeople.values
+                          .fold<int>(0, (sum, list) => sum + list.length);
+
+                      if (totalCheckedIn > 0) {
+                        Navigator.pushAndRemoveUntil(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const GamificationScreen(),
+                          ),
+                          (route) => false,
+                        );
+                      } else {
+                        Navigator.pop(context);
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(vertical: 20),
+                      backgroundColor: const Color(0xFF667eea),
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      elevation: 4,
+                    ),
+                    child: const Text(
+                      'Finish',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }

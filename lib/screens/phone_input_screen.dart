@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
 import '../models/person_model.dart';
@@ -41,26 +42,32 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
   final _phoneController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  Timer? _inactivityTimer;
 
   @override
   void dispose() {
+    _inactivityTimer?.cancel();
     _phoneController.dispose();
     super.dispose();
   }
 
+  @override
+  void initState() {
+    super.initState();
+    _resetInactivityTimer();
+    _phoneController.addListener(_resetInactivityTimer);
+  }
+
   void _handleSubmit() {
+    _resetInactivityTimer();
     final enteredPhone = _phoneController.text.trim();
     
     if (enteredPhone.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text(
-            'Please enter a phone number',
-          ),
-          backgroundColor: Colors.red,
-          duration: Duration(seconds: 2),
-        ),
-      );
+      _showCenteredErrorDialog('Please enter a phone number');
+      return;
+    }
+    if (enteredPhone.length < 10) {
+      _showCenteredErrorDialog('Phone number is too short');
       return;
     }
 
@@ -92,49 +99,87 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           );
         } else {
           // Phone number not found - show error message
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text(
-                'Phone number not found. Please check your number and try again.',
-              ),
-              backgroundColor: Colors.red,
-              duration: Duration(seconds: 3),
-            ),
+          _showCenteredErrorDialog(
+            'Phone number not found. Please check your number and try again.',
           );
         }
       }
     });
   }
 
+  void _resetInactivityTimer() {
+    _inactivityTimer?.cancel();
+    _inactivityTimer = Timer(const Duration(seconds: 10), () {
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).popUntil((route) => route.isFirst);
+    });
+  }
+
+
+  Future<void> _showCenteredErrorDialog(String message) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFE53935),
+          title: const Text(
+            'Error',
+            style: TextStyle(color: Colors.white),
+          ),
+          content: Text(
+            message,
+            style: const TextStyle(color: Colors.white),
+          ),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text(
+                'OK',
+                style: TextStyle(color: Colors.white),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color(0xFF667eea),
-              Color(0xFF764ba2),
-            ],
+      body: Listener(
+        onPointerDown: (_) => _resetInactivityTimer(),
+        child: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF667eea),
+                Color(0xFF764ba2),
+              ],
+            ),
           ),
-        ),
-        child: SafeArea(
-          child: SingleChildScrollView(
-            padding: const EdgeInsets.all(24.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Back Button
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.arrow_back, color: Colors.white),
-                    iconSize: 32,
+          child: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Back Button
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back, color: Colors.white),
+                      iconSize: 32,
+                    ),
                   ),
-                ),
 
                 const SizedBox(height: 32),
 
@@ -188,7 +233,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                           const Text(
                             'Enter Your Phone Number',
                             style: TextStyle(
-                              fontSize: 24,
+                              fontSize: 30,
                               fontWeight: FontWeight.w600,
                               color: Color(0xFF667eea),
                             ),
@@ -197,7 +242,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                           const Text(
                             'Your phone number will serve as your ID',
                             style: TextStyle(
-                              fontSize: 14,
+                              fontSize: 25,
                               color: Colors.grey,
                             ),
                           ),
@@ -243,6 +288,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                                 if (_phoneController.text.isNotEmpty)
                                   IconButton(
                                     onPressed: () {
+                                      _resetInactivityTimer();
                                       setState(() {
                                         _phoneController.clear();
                                       });
@@ -312,6 +358,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -351,6 +398,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
+                const SizedBox(width: 120, height: 120),
                 _buildNumberButton(number: '0'),
                 _buildBackspaceButton(),
               ],
@@ -367,6 +415,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       height: 120,
       child: ElevatedButton(
         onPressed: () {
+          _resetInactivityTimer();
           if (_phoneController.text.length < 15) {
             setState(() {
               _phoneController.text += number;
@@ -403,6 +452,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       height: 120,
       child: ElevatedButton(
         onPressed: () {
+          _resetInactivityTimer();
           if (_phoneController.text.isNotEmpty) {
             setState(() {
               _phoneController.text = _phoneController.text

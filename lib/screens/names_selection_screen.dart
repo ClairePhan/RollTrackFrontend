@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
-import 'checkin_confirmation_screen.dart';
+import 'gamification_screen.dart';
 
 class NamesSelectionScreen extends StatelessWidget {
   final String phoneNumber;
@@ -93,14 +93,11 @@ class NamesSelectionScreen extends StatelessWidget {
                         ),
                         child: InkWell(
                           onTap: () {
-                            // Navigate to check-in confirmation screen
-                            Navigator.push(
+                            // Auto check-in and go to gamification screen
+                            Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => CheckInConfirmationScreen(
-                                  person: person,
-                                  phoneNumber: phoneNumber,
-                                ),
+                                builder: (context) => const GamificationScreen(),
                               ),
                             );
                           },
