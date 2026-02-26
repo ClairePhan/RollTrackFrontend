@@ -11,6 +11,8 @@ class RollTrackApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    //MaterialApp is a widget high-level, core component in Flutter that provides 
+    // the basic structure and functionality for applications using the material design system
     return MaterialApp(
       title: 'RollTrack',
       theme: ThemeData(
