@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import '/screens/find_your_profile_screen.dart';
+import '../models/class_model.dart';
+import '/screens/phone_input_screen.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -16,7 +17,7 @@ class LandingScreen extends StatelessWidget {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => const FindYourProfilePage(),
+            builder: (context) => const PhoneInputScreen(),
           ),
         );
       },
