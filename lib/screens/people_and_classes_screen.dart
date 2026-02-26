@@ -187,7 +187,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'You have attended $attendedCount classes!',
+                    'You have attended $attendedCount ${attendedCount == 1 ? 'class' : 'classes'}!',
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       fontSize: 18,
