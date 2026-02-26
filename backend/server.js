@@ -255,47 +255,81 @@ app.post('/api/checkin', async (req, res) => {
   }
 });
 
-// Undo a check-in and decrement classesAttended
+// Undo a check-in: remove attendance document and decrement student's classesAttended
 app.post('/api/checkin/undo', async (req, res) => {
   try {
     if (!db) {
       return res.status(503).json({ error: 'Database not connected' });
     }
 
-    const { studentId, classId } = req.body;
+    const { ObjectId } = await import('mongodb');
+    let studentId = req.body.studentId != null ? String(req.body.studentId).trim() : '';
+    let classId = req.body.classId != null ? String(req.body.classId).trim() : '';
 
     if (!studentId) {
       return res.status(400).json({ error: 'Student ID is required' });
     }
-
-    const collection = db.collection('attendance');
-    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-
-    const query = { studentId, date };
-    if (classId) {
-      query.classId = classId;
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
     }
 
-    const deleted = await collection.findOneAndDelete(query);
+    let objectIdStudent;
+    try {
+      objectIdStudent = new ObjectId(studentId);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid student ID format' });
+    }
 
-    if (!deleted.value) {
+    const attendanceCollection = db.collection('attendance');
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    function getDeletedDoc(res) {
+      if (!res) return null;
+      const doc = typeof res.value !== 'undefined' ? res.value : res;
+      return doc && typeof doc === 'object' && doc._id !== undefined ? doc : null;
+    }
+
+    // Match how check-in stores ids (as strings from request body)
+    let result = await attendanceCollection.findOneAndDelete({ studentId, classId, date });
+    let deletedDoc = getDeletedDoc(result);
+
+    // If not found, try with ObjectId in case docs were stored with ObjectId type
+    if (!deletedDoc) {
+      let objectIdClass;
+      try {
+        objectIdClass = new ObjectId(classId);
+      } catch (e) {
+        objectIdClass = null;
+      }
+      if (objectIdClass) {
+        result = await attendanceCollection.findOneAndDelete({
+          studentId: objectIdStudent,
+          classId: objectIdClass,
+          date,
+        });
+        deletedDoc = getDeletedDoc(result);
+      }
+    }
+
+    if (!deletedDoc) {
       return res.status(404).json({ error: 'Check-in not found' });
     }
 
-    // Decrement classesAttended for the student
+    // Decrement classesAttended so it returns to the value before this check-in
+    const studentsCollection = db.collection('students');
     try {
-      const { ObjectId } = await import('mongodb');
-      const studentsCollection = db.collection('students');
       await studentsCollection.updateOne(
-        { _id: new ObjectId(studentId) },
+        { _id: objectIdStudent },
         { $inc: { classesAttended: -1 } }
       );
     } catch (updateError) {
-      console.error('Failed to decrement classesAttended for student', studentId, updateError);
+      console.error('Undo: failed to decrement classesAttended', studentId, updateError.message);
+      // Still return success since we removed the attendance record
     }
 
     res.json({ message: 'Check-in undone successfully' });
   } catch (error) {
+    console.error('Undo check-in error:', error);
     res.status(500).json({ error: 'Failed to undo check-in', message: error.message });
   }
 });

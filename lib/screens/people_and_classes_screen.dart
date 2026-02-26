@@ -124,10 +124,15 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
       }
     } catch (e) {
       if (!mounted) return;
+      final isDuplicate = e is ApiException && e.statusCode == 409;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(e.toString().replaceFirst('ApiException: ', '')),
-          backgroundColor: Colors.red,
+          content: Text(
+            isDuplicate
+                ? '${person.name} already checked into ${classItem.displayName} today.'
+                : e.toString().replaceFirst('ApiException: ', ''),
+          ),
+          backgroundColor: isDuplicate ? Colors.orange : Colors.red,
         ),
       );
     }
@@ -456,20 +461,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: () {
-                      final totalCheckedIn = checkedInPeople.values
-                          .fold<int>(0, (sum, list) => sum + list.length);
-
-                      if (totalCheckedIn > 0) {
-                        Navigator.pushAndRemoveUntil(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const GamificationScreen(),
-                          ),
-                          (route) => false,
-                        );
-                      } else {
-                        Navigator.pop(context);
-                      }
+                      Navigator.of(context).popUntil((route) => route.isFirst);
                     },
                     style: ElevatedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(vertical: 20),
@@ -646,6 +638,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                         backgroundColor: const Color(0xFF667eea).withValues(alpha: 0.2),
                         deleteIcon: const Icon(Icons.close, size: 16),
                         onDeleted: () async {
+                          // Undo: remove attendance doc, decrement classesAttended, then update UI
                           try {
                             await _api.undoCheckIn(
                               studentId: person.id,
