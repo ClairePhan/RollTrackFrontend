@@ -1,11 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
-import '../models/person_model.dart';
+import '../services/api_service.dart';
 import 'people_and_classes_screen.dart';
-
-
-
 
 class PhoneInputScreen extends StatefulWidget {
   final ClassModel? classModel;
@@ -20,26 +17,8 @@ class PhoneInputScreen extends StatefulWidget {
 }
 
 class _PhoneInputScreenState extends State<PhoneInputScreen> {
-  static final List<PersonModel> people = [
-    PersonModel(
-      name: 'Hokulani Topping',
-      phoneNumber: '8084222222',
-    ),
-    PersonModel(
-      name: 'Satoru Gojo',
-      phoneNumber: '8084222222',
-    ),
-    PersonModel(
-      name: 'Yuji Itadori',
-      phoneNumber: '8084222222',
-    ),
-    PersonModel(
-      name: 'Megumi Fushiguro',
-      phoneNumber: '8084222222',
-    ),
-  ];
-
   final _phoneController = TextEditingController();
+  final _api = ApiService();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
   Timer? _inactivityTimer;
@@ -58,10 +37,10 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     _phoneController.addListener(_resetInactivityTimer);
   }
 
-  void _handleSubmit() {
+  Future<void> _handleSubmit() async {
     _resetInactivityTimer();
     final enteredPhone = _phoneController.text.trim();
-    
+
     if (enteredPhone.isEmpty) {
       _showCenteredErrorDialog('Please enter a phone number');
       return;
@@ -75,36 +54,41 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       _isLoading = true;
     });
 
-    // Simulate API call or processing
-    Future.delayed(const Duration(milliseconds: 500), () {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+    try {
+      final matchingPeople = await _api.getStudentsByPhone(enteredPhone);
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
 
-        final matchingPeople = people.where(
-          (p) => p.phoneNumber == enteredPhone,
-        ).toList();
+      if (matchingPeople.isNotEmpty) {
+        // Stop the inactivity timer once we move to the next screen
+        _inactivityTimer?.cancel();
+        _inactivityTimer = null;
 
-        if (matchingPeople.isNotEmpty) {
-          // Phone number found - navigate to people and classes screen
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => PeopleAndClassesScreen(
-                phoneNumber: enteredPhone,
-                people: matchingPeople,
-              ),
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PeopleAndClassesScreen(
+              phoneNumber: enteredPhone,
+              people: matchingPeople,
             ),
-          );
-        } else {
-          // Phone number not found - show error message
-          _showCenteredErrorDialog(
-            'Phone number not found. Please check your number and try again.',
-          );
-        }
+          ),
+        );
+      } else {
+        _showCenteredErrorDialog(
+          'Phone number not found. Please check your number and try again.',
+        );
       }
-    });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _isLoading = false;
+      });
+      _showCenteredErrorDialog(
+        'Could not load students. Please check your connection and try again.',
+      );
+    }
   }
 
   void _resetInactivityTimer() {

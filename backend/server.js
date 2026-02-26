@@ -3,19 +3,16 @@ import { MongoClient } from 'mongodb';
 import cors from 'cors';
 import dotenv from 'dotenv';
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const MONGODB_URI = process.env.MONGODB_URI;
 
-// Middleware
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB connection
 let db;
 let client;
 
@@ -38,7 +35,7 @@ async function connectToMongoDB() {
     return db;
   } catch (error) {
     console.error('❌ MongoDB connection error:', error.message);
-    // Helpful hints for common issues
+    
     if (error.message && error.message.includes('querySrv') && error.message.includes('ECONNREFUSED')) {
       console.error('');
       console.error('💡 DNS SRV lookup failed. This often means:');
@@ -223,6 +220,21 @@ app.post('/api/checkin', async (req, res) => {
     
     try {
       const result = await collection.insertOne(checkin);
+
+      // Increment classesAttended count for the student, if we have a studentId
+      if (studentId) {
+        try {
+          const { ObjectId } = await import('mongodb');
+          const studentsCollection = db.collection('students');
+          await studentsCollection.updateOne(
+            { _id: new ObjectId(studentId) },
+            { $inc: { classesAttended: 1 } }
+          );
+        } catch (updateError) {
+          console.error('Failed to increment classesAttended for student', studentId, updateError);
+        }
+      }
+
       res.status(201).json({ 
         message: 'Check-in successful', 
         id: result.insertedId,
@@ -240,6 +252,85 @@ app.post('/api/checkin', async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: 'Failed to check in', message: error.message });
+  }
+});
+
+// Undo a check-in: remove attendance document and decrement student's classesAttended
+app.post('/api/checkin/undo', async (req, res) => {
+  try {
+    if (!db) {
+      return res.status(503).json({ error: 'Database not connected' });
+    }
+
+    const { ObjectId } = await import('mongodb');
+    let studentId = req.body.studentId != null ? String(req.body.studentId).trim() : '';
+    let classId = req.body.classId != null ? String(req.body.classId).trim() : '';
+
+    if (!studentId) {
+      return res.status(400).json({ error: 'Student ID is required' });
+    }
+    if (!classId) {
+      return res.status(400).json({ error: 'Class ID is required' });
+    }
+
+    let objectIdStudent;
+    try {
+      objectIdStudent = new ObjectId(studentId);
+    } catch (e) {
+      return res.status(400).json({ error: 'Invalid student ID format' });
+    }
+
+    const attendanceCollection = db.collection('attendance');
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+
+    function getDeletedDoc(res) {
+      if (!res) return null;
+      const doc = typeof res.value !== 'undefined' ? res.value : res;
+      return doc && typeof doc === 'object' && doc._id !== undefined ? doc : null;
+    }
+
+    // Match how check-in stores ids (as strings from request body)
+    let result = await attendanceCollection.findOneAndDelete({ studentId, classId, date });
+    let deletedDoc = getDeletedDoc(result);
+
+    // If not found, try with ObjectId in case docs were stored with ObjectId type
+    if (!deletedDoc) {
+      let objectIdClass;
+      try {
+        objectIdClass = new ObjectId(classId);
+      } catch (e) {
+        objectIdClass = null;
+      }
+      if (objectIdClass) {
+        result = await attendanceCollection.findOneAndDelete({
+          studentId: objectIdStudent,
+          classId: objectIdClass,
+          date,
+        });
+        deletedDoc = getDeletedDoc(result);
+      }
+    }
+
+    if (!deletedDoc) {
+      return res.status(404).json({ error: 'Check-in not found' });
+    }
+
+    // Decrement classesAttended so it returns to the value before this check-in
+    const studentsCollection = db.collection('students');
+    try {
+      await studentsCollection.updateOne(
+        { _id: objectIdStudent },
+        { $inc: { classesAttended: -1 } }
+      );
+    } catch (updateError) {
+      console.error('Undo: failed to decrement classesAttended', studentId, updateError.message);
+      // Still return success since we removed the attendance record
+    }
+
+    res.json({ message: 'Check-in undone successfully' });
+  } catch (error) {
+    console.error('Undo check-in error:', error);
+    res.status(500).json({ error: 'Failed to undo check-in', message: error.message });
   }
 });
 
@@ -295,27 +386,14 @@ app.get('/api/attendance/stats', async (req, res) => {
   }
 });
 
-// Start server
 async function startServer() {
   try {
-    // Connect to MongoDB first
     await connectToMongoDB();
-
-    const server = app.listen(PORT, () => {
+    
+    app.listen(PORT, () => {
       console.log(`🚀 Server is running on http://localhost:${PORT}`);
       console.log(`📊 Environment: ${process.env.NODE_ENV || 'development'}`);
       console.log(`📝 API endpoints available at http://localhost:${PORT}/api`);
-    });
-
-    server.on('error', (err) => {
-      if (err.code === 'EADDRINUSE') {
-        console.error(`❌ Port ${PORT} is already in use.`);
-        console.error('   Stop the other process using this port, or set PORT to a different number in .env');
-        console.error('   On Windows, find process: Get-NetTCPConnection -LocalPort ' + PORT);
-      } else {
-        console.error('❌ Server error:', err.message);
-      }
-      process.exit(1);
     });
   } catch (error) {
     console.error('❌ Failed to start server:', error.message);
@@ -343,5 +421,4 @@ process.on('SIGTERM', async () => {
   process.exit(0);
 });
 
-// Start the server
 startServer();
