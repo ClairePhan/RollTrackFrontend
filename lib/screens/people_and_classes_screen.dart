@@ -265,7 +265,19 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
             ),
           ),
 
-          const SizedBox(height: 32),
+          const SizedBox(height: 12),
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.0),
+            child: Text(
+              'Drag and drop a student into a class',
+              style: TextStyle(
+                fontSize: 18,
+                color: Colors.white70,
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
 
           // People List
           Expanded(
