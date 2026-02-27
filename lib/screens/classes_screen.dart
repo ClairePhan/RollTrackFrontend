@@ -208,7 +208,7 @@ class _ClassCard extends StatelessWidget {
                   ),
                 ),
                 child: Text(
-                  classModel.displayName,
+                  classModel.name ?? 'Class',
                   style: const TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
@@ -231,9 +231,14 @@ class _ClassCard extends StatelessWidget {
                     ),
                     _DetailRow(
                       label: 'Time:',
-                      value: classModel.timeRangeDisplay.isNotEmpty
-                          ? '${classModel.scheduleDisplay} ${classModel.timeRangeDisplay}'
-                          : classModel.time,
+                      value: [
+                        if ((classModel.schedule ?? '').isNotEmpty)
+                          classModel.schedule,
+                        if ((classModel.timeRange ?? '').isNotEmpty)
+                          classModel.timeRange
+                        else
+                          classModel.time,
+                      ].whereType<String>().join(' '),
                     ),
                     _DetailRow(
                       label: 'Location:',
