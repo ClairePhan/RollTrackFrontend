@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'phone_input_screen.dart';
+import '../widgets/rolltrack_animation.dart';
 
 class LandingScreen extends StatelessWidget {
   const LandingScreen({super.key});
@@ -34,6 +35,8 @@ class LandingScreen extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
+                      // RollTrack Animation removed
+                      SizedBox(height: 24),
                   // Check in Title
                   TweenAnimationBuilder<double>(
                     tween: Tween(begin: 0.0, end: 1.0),

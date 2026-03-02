@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import '../models/person_model.dart';
 import '../models/class_model.dart';
 import '../services/api_service.dart';
+import '../widgets/rolltrack_animation.dart';
 import 'gamification_screen.dart';
 
 class PeopleAndClassesScreen extends StatefulWidget {
@@ -155,26 +156,27 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+              width: 320,
+              height: 320,
+              padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(24),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black.withOpacity(0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
                 ],
               ),
               child: Column(
-                mainAxisSize: MainAxisSize.min,
+                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisSize: MainAxisSize.max,
                 children: [
-                  const Icon(
-                    Icons.emoji_events,
-                    color: Color(0xFFFFC107),
-                    size: 48,
+                  SizedBox(
+                    height: 140,
+                    child: RolltrackAnimation(height: 140),
                   ),
                   const SizedBox(height: 16),
                   const Text(
