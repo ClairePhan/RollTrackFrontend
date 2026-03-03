@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
-import 'gamification_screen.dart';
+// Removed GamificationScreen import
 
 class NamesSelectionScreen extends StatelessWidget {
   final String phoneNumber;
@@ -94,12 +94,7 @@ class NamesSelectionScreen extends StatelessWidget {
                         child: InkWell(
                           onTap: () {
                             // Auto check-in and go to gamification screen
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const GamificationScreen(),
-                              ),
-                            );
+                              // Removed GamificationScreen navigation
                           },
                           borderRadius: BorderRadius.circular(16),
                           child: Padding(

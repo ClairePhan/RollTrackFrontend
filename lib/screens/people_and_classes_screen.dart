@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import '../models/person_model.dart';
 import '../models/class_model.dart';
 import '../services/api_service.dart';
-import 'gamification_screen.dart';
+import 'package:rive/rive.dart' as rive;
+
 
 class PeopleAndClassesScreen extends StatefulWidget {
   final String phoneNumber;
@@ -116,11 +117,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
         _showCongratsPopup(person, attendedCount);
       }
       if (_isSinglePerson) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const GamificationScreen()),
-          (route) => false,
-        );
+          // Removed GamificationScreen navigation
       }
     } catch (e) {
       if (!mounted) return;
@@ -142,7 +139,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
     showDialog<void>(
       context: context,
       barrierDismissible: true,
-      barrierColor: Colors.black.withValues(alpha: 0.4),
+      barrierColor: Colors.black.withOpacity(0.4),
       builder: (dialogContext) {
         // Auto-close after 4 seconds
         Future.delayed(const Duration(seconds: 4), () {
@@ -162,7 +159,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                 borderRadius: BorderRadius.circular(20),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.2),
+                    color: Colors.black.withOpacity(0.2),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -171,10 +168,23 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.emoji_events,
-                    color: Color(0xFFFFC107),
-                    size: 48,
+                  SizedBox(
+                    width: 100,
+                    height: 100,
+                    child: rive.RiveWidgetBuilder(
+                      fileLoader: rive.FileLoader.fromAsset('assets/animation_assets/rolltrack.riv', riveFactory: rive.Factory.rive),
+                      builder: (context, state) => switch (state) {
+                        rive.RiveLoading() => const Center(child: CircularProgressIndicator()),
+                        rive.RiveFailed() => ErrorWidget.withDetails(
+                          message: state.error.toString(),
+                          error: FlutterError(state.error.toString()),
+                        ),
+                        rive.RiveLoaded() => rive.RiveWidget(
+                          controller: state.controller,
+                          fit: rive.Fit.contain,
+                        ),
+                      },
+                    ),
                   ),
                   const SizedBox(height: 16),
                   const Text(
@@ -340,13 +350,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                       ),
                       child: ElevatedButton(
                         onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const GamificationScreen(),
-                            ),
-                          );
+                            // Removed GamificationScreen navigation
                         },
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF667eea),
