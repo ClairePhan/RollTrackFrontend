@@ -12,7 +12,11 @@ dependencies:
   http: ^1.2.0
   qr_flutter: ^4.1.0
   cupertino_icons: ^1.0.2
+<<<<<<< HEAD
   rive: ^0.14.4
+=======
+  rive: ^0.14.0-dev.6
+>>>>>>> 5a6fb40feb2fd75bfbd411b82dcca4f3dd018c18
 
 dev_dependencies:
   flutter_test:
@@ -22,4 +26,8 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   assets:
+<<<<<<< HEAD
     - assets/animation_assets/rolltrack.riv
+=======
+    - lib/animation_assets/rolltrack.riv
+>>>>>>> 5a6fb40feb2fd75bfbd411b82dcca4f3dd018c18

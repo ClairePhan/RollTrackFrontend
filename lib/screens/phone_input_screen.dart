@@ -1,8 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import '../models/class_model.dart';
+<<<<<<< HEAD
+import '../models/student_model.dart';
+=======
 import '../services/api_service.dart';
 import 'people_and_classes_screen.dart';
+>>>>>>> 5798e9a4e0e7ce4a3a2536e3249a62e9aff1050a
 
 class PhoneInputScreen extends StatefulWidget {
   final ClassModel? classModel;
@@ -23,6 +27,32 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
   bool _isLoading = false;
   Timer? _inactivityTimer;
 
+  // Temporary static student data. In a real app this would come from an API.
+  final List<StudentModel> _allStudents = [
+    StudentModel(
+      name: 'Alex Kim',
+      phoneNumber: '1234567890',
+      classesAttended: 12,
+      belt: 'White',
+    ),
+    StudentModel(
+      name: 'Jordan Lee',
+      phoneNumber: '1234567890',
+      classesAttended: 25,
+      belt: 'Blue',
+    ),
+    StudentModel(
+      name: 'Taylor Smith',
+      phoneNumber: '5551234567',
+      classesAttended: 5,
+      belt: 'White',
+    ),
+  ];
+
+  List<StudentModel> _matchingStudents = [];
+  StudentModel? _selectedStudent;
+  bool _hasSearched = false;
+
   @override
   void dispose() {
     _inactivityTimer?.cancel();
@@ -30,6 +60,26 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     super.dispose();
   }
 
+<<<<<<< HEAD
+  void _handleSearch() {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+
+    final input = _phoneController.text.replaceAll(RegExp(r'[^0-9]'), '');
+
+    setState(() {
+      _hasSearched = true;
+      _selectedStudent = null;
+      _matchingStudents = _allStudents
+          .where((s) => s.phoneNumber.replaceAll(RegExp(r'[^0-9]'), '') == input)
+          .toList();
+    });
+  }
+
+  void _handleSubmit() {
+    if (_selectedStudent == null) {
+=======
   @override
   void initState() {
     super.initState();
@@ -47,6 +97,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     }
     if (enteredPhone.length < 10) {
       _showCenteredErrorDialog('Phone number is too short');
+>>>>>>> 5798e9a4e0e7ce4a3a2536e3249a62e9aff1050a
       return;
     }
 
@@ -54,6 +105,34 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
       _isLoading = true;
     });
 
+<<<<<<< HEAD
+    // Simulate API call or processing
+    Future.delayed(const Duration(milliseconds: 500), () {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Checked in ${_selectedStudent!.name} to ${widget.classModel.name}',
+            ),
+            backgroundColor: Colors.green,
+            duration: const Duration(seconds: 3),
+          ),
+        );
+
+        // Navigate back to classes screen after a delay
+        Future.delayed(const Duration(seconds: 2), () {
+          if (mounted) {
+            Navigator.pop(context);
+          }
+        });
+      }
+    });
+=======
     try {
       final matchingPeople = await _api.getStudentsByPhone(enteredPhone);
       if (!mounted) return;
@@ -131,6 +210,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
         );
       },
     );
+>>>>>>> 5798e9a4e0e7ce4a3a2536e3249a62e9aff1050a
   }
 
   @override
@@ -201,7 +281,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
 
                 const SizedBox(height: 48),
 
-                // Phone Number Input Card
+                // Phone Number Input + Student selection Card
                 Card(
                   elevation: 8,
                   shape: RoundedRectangleBorder(
@@ -231,6 +311,151 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                             ),
                           ),
                           const SizedBox(height: 24),
+<<<<<<< HEAD
+                          Row(
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: _phoneController,
+                                  keyboardType: TextInputType.phone,
+                                  inputFormatters: [
+                                    FilteringTextInputFormatter.digitsOnly,
+                                    LengthLimitingTextInputFormatter(15),
+                                  ],
+                                  decoration: InputDecoration(
+                                    labelText: 'Phone Number',
+                                    hintText: '(123) 456-7890',
+                                    prefixIcon: const Icon(Icons.phone),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    filled: true,
+                                    fillColor: Colors.grey[50],
+                                  ),
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) {
+                                      return 'Please enter your phone number';
+                                    }
+                                    if (value.length < 10) {
+                                      return 'Phone number must be at least 10 digits';
+                                    }
+                                    return null;
+                                  },
+                                  autofocus: true,
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              ElevatedButton(
+                                onPressed: _isLoading ? null : _handleSearch,
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                    horizontal: 20,
+                                  ),
+                                  backgroundColor: Colors.white,
+                                  foregroundColor: const Color(0xFF667eea),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                  elevation: 2,
+                                ),
+                                child: const Text(
+                                  'Search',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          // Student selection grid (inside the card)
+                          if (_hasSearched)
+                            _matchingStudents.isEmpty
+                                ? const Padding(
+                                    padding:
+                                        EdgeInsets.symmetric(vertical: 8.0),
+                                    child: Text(
+                                      'No students found for that phone number.',
+                                      style: TextStyle(
+                                        color: Colors.black87,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  )
+                                : Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Select Your Profile',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w600,
+                                          color: Color(0xFF667eea),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 12),
+                                      GridView.builder(
+                                        shrinkWrap: true,
+                                        physics:
+                                            const NeverScrollableScrollPhysics(),
+                                        gridDelegate:
+                                            const SliverGridDelegateWithMaxCrossAxisExtent(
+                                          maxCrossAxisExtent: 220,
+                                          mainAxisSpacing: 12,
+                                          crossAxisSpacing: 12,
+                                          childAspectRatio: 0.9,
+                                        ),
+                                        itemCount: _matchingStudents.length,
+                                        itemBuilder: (context, index) {
+                                          final student =
+                                              _matchingStudents[index];
+                                          final isSelected =
+                                              _selectedStudent == student;
+                                          return Center(
+                                            child: SizedBox(
+                                              width: 160,
+                                              height: 180,
+                                              child: _StudentCard(
+                                                student: student,
+                                                isSelected: isSelected,
+                                                onTap: () {
+                                                  setState(() {
+                                                    _selectedStudent = student;
+                                                  });
+                                                },
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ],
+                                  ),
+
+                          const SizedBox(height: 24),
+
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: (_isLoading || _selectedStudent == null)
+                                  ? null
+                                  : _handleSubmit,
+                              style: ElevatedButton.styleFrom(
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 16),
+                                backgroundColor: const Color(0xFF667eea),
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                elevation: 4,
+                              ),
+                              child: _isLoading
+=======
                           
                           // Phone Number Display
                           Container(
@@ -295,12 +520,14 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                             child: ElevatedButton.icon(
                               onPressed: _isLoading ? null : _handleSubmit,
                               icon: _isLoading
+>>>>>>> 5798e9a4e0e7ce4a3a2536e3249a62e9aff1050a
                                   ? const SizedBox(
                                       width: 20,
                                       height: 20,
                                       child: CircularProgressIndicator(
                                         strokeWidth: 2,
-                                        valueColor: AlwaysStoppedAnimation<Color>(
+                                        valueColor:
+                                            AlwaysStoppedAnimation<Color>(
                                           Colors.white,
                                         ),
                                       ),
@@ -346,6 +573,121 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
     );
   }
 
+<<<<<<< HEAD
+class _StudentCard extends StatelessWidget {
+  final StudentModel student;
+  final bool isSelected;
+  final VoidCallback onTap;
+
+  const _StudentCard({
+    required this.student,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Stack(
+        children: [
+          AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isSelected ? const Color(0xFF22C55E) : Colors.transparent,
+                width: 3,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.08),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 24,
+                  backgroundColor: const Color(0xFFE0E0E0),
+                  child: Icon(
+                    Icons.person,
+                    size: 28,
+                    color: Colors.grey[700],
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  student.name,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+          if (isSelected)
+            Positioned(
+              top: 8,
+              right: 8,
+              child: Container(
+                decoration: const BoxDecoration(
+                  color: Color(0xFF22C55E),
+                  shape: BoxShape.circle,
+                ),
+                padding: const EdgeInsets.all(4),
+                child: const Icon(
+                  Icons.check,
+                  size: 16,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _DetailRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, color: const Color(0xFF667eea), size: 24),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: const TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.grey,
+                ),
+=======
   Widget _buildNumberPad() {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -374,6 +716,7 @@ class _PhoneInputScreenState extends State<PhoneInputScreen> {
                       number: (row * 3 + col + 1).toString(),
                     ),
                 ],
+>>>>>>> 5798e9a4e0e7ce4a3a2536e3249a62e9aff1050a
               ),
             ),
           // Bottom row: 0, backspace
