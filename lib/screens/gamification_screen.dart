@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:rive/rive.dart' as rive;
+
 import 'landing_screen.dart';
+import '../widgets/rolltrack_animation.dart';
 
 class GamificationScreen extends StatefulWidget {
   const GamificationScreen({super.key});
@@ -8,8 +11,7 @@ class GamificationScreen extends StatefulWidget {
   State<GamificationScreen> createState() => _GamificationScreenState();
 }
 
-class _GamificationScreenState extends State<GamificationScreen>
-    with TickerProviderStateMixin {
+class _GamificationScreenState extends State<GamificationScreen> with TickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<Offset> _slideAnimation;
   late Animation<double> _firstOpacity;
@@ -59,108 +61,8 @@ class _GamificationScreenState extends State<GamificationScreen>
 
   @override
   Widget build(BuildContext context) {
-    final screenSize = MediaQuery.of(context).size;
-    final iconSize = screenSize.width * 0.25;
-    final numberFontSize = screenSize.width * 0.20;
-    // removed unused button sizing since there is no manual button
-    final verticalSpacing = screenSize.height * 0.05;
-
-    return Scaffold(
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFF667eea),
-                  Color(0xFF764ba2),
-                ],
-              ),
-            ),
-            child: SafeArea(
-              child: Center(
-                child: SingleChildScrollView(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                  // Trophy/Achievement Icon
-                  Icon(
-                    Icons.emoji_events,
-                    size: iconSize,
-                    color: Colors.yellow,
-                  ),
-                  SizedBox(height: verticalSpacing),
-
-                  // Animated Number (1 to 2)
-                  SizedBox(
-                    height: numberFontSize * 1.5,
-                    width: screenSize.width,
-                    child: AnimatedBuilder(
-                      animation: _animationController,
-                      builder: (context, child) {
-                        return Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            // Number 1 - slides from center to left and fades out
-                            Opacity(
-                              opacity: _firstOpacity.value,
-                              child: SlideTransition(
-                                position: _slideAnimation,
-                                child: Text(
-                                  '1',
-                                  style: TextStyle(
-                                    fontSize: numberFontSize,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            // Number 2 - slides in from the right to center and fades in
-                            Opacity(
-                              opacity: _secondOpacity.value,
-                              child: SlideTransition(
-                                position: Tween<Offset>(
-                                  begin: const Offset(1.5, 0),
-                                  end: const Offset(0, 0),
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: _animationController,
-                                    curve: Curves.easeInOut,
-                                  ),
-                                ),
-                                child: Text(
-                                  '2',
-                                  style: TextStyle(
-                                    fontSize: numberFontSize,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-
-                  SizedBox(height: verticalSpacing * 1.5),
-
-                  // Spacer to keep layout balanced (no manual button)
-                      SizedBox(height: verticalSpacing),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
+    return const Scaffold(
+      body: SizedBox.shrink(),
     );
   }
 }
