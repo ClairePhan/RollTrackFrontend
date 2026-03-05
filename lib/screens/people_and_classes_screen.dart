@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:rive/rive.dart' as rive;
 import '../models/person_model.dart';
 import '../models/class_model.dart';
 import '../services/api_service.dart';
@@ -155,8 +156,9 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
           child: Material(
             color: Colors.transparent,
             child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 24),
-              padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 24),
+              width: 260,
+              height: 260,
+              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(20),
@@ -171,18 +173,28 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(
-                    Icons.emoji_events,
-                    color: Color(0xFFFFC107),
-                    size: 48,
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Congrats!',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.black87,
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 120,
+                    child: rive.RiveWidgetBuilder(
+                      fileLoader: rive.FileLoader.fromAsset(
+                        'assets/fire.riv',
+                        riveFactory: rive.Factory.rive,
+                      ),
+                      controller: (file) => rive.RiveWidgetController(
+                        file,
+                        stateMachineSelector:
+                            const rive.StateMachineNamed('Go Big State'),
+                      ),
+                      builder: (context, state) {
+                        if (state is rive.RiveLoaded) {
+                          return rive.RiveWidget(
+                            controller: state.controller,
+                            fit: rive.Fit.contain,
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -682,23 +694,41 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                 if (isDraggingOver) ...[
                   const SizedBox(height: 12),
                   Container(
+                    height: 120,
+                    width: double.infinity,
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: Colors.green.shade100,
-                      borderRadius: BorderRadius.circular(8),
+                      color: Colors.green.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(color: Colors.green.shade200),
                     ),
-                    child: const Row(
-                      children: [
-                        Icon(Icons.add_circle, color: Colors.green, size: 20),
-                        SizedBox(width: 8),
-                        Text(
-                          'Drop here to check in',
-                          style: TextStyle(
-                            color: Colors.green,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ],
+                    child: rive.RiveWidgetBuilder(
+                      fileLoader: rive.FileLoader.fromAsset(
+                        'assets/fire.riv',
+                        riveFactory: rive.Factory.rive,
+                      ),
+                      controller: (file) => rive.RiveWidgetController(
+                        file,
+                        stateMachineSelector:
+                            const rive.StateMachineNamed('GoBigState'),
+                      ),
+                      builder: (context, state) {
+                        if (state is rive.RiveLoaded) {
+                          return rive.RiveWidget(
+                            controller: state.controller,
+                            fit: rive.Fit.contain,
+                          );
+                        }
+                        if (state is rive.RiveFailed) {
+                          return const Center(
+                            child: Text(
+                              'Animation failed to load',
+                              style: TextStyle(color: Colors.green),
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
                     ),
                   ),
                 ],
