@@ -60,7 +60,6 @@ class _GamificationScreenState extends State<GamificationScreen>
   @override
   Widget build(BuildContext context) {
     final screenSize = MediaQuery.of(context).size;
-    final iconSize = screenSize.width * 0.25;
     final numberFontSize = screenSize.width * 0.20;
     // removed unused button sizing since there is no manual button
     final verticalSpacing = screenSize.height * 0.05;
@@ -86,12 +85,7 @@ class _GamificationScreenState extends State<GamificationScreen>
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                  // Trophy/Achievement Icon
-                  Icon(
-                    Icons.emoji_events,
-                    size: iconSize,
-                    color: Colors.yellow,
-                  ),
+                  // Spacer (trophy removed)
                   SizedBox(height: verticalSpacing),
 
                   // Animated Number (1 to 2)
