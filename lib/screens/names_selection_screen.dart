@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import '../models/person_model.dart';
-import 'gamification_screen.dart';
 
 class NamesSelectionScreen extends StatelessWidget {
   final String phoneNumber;
@@ -92,15 +91,7 @@ class NamesSelectionScreen extends StatelessWidget {
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: InkWell(
-                          onTap: () {
-                            // Auto check-in and go to gamification screen
-                            Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const GamificationScreen(),
-                              ),
-                            );
-                          },
+                          onTap: () {},
                           borderRadius: BorderRadius.circular(16),
                           child: Padding(
                             padding: const EdgeInsets.all(24.0),
