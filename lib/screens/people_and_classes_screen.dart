@@ -4,7 +4,6 @@ import 'package:rive/rive.dart' as rive;
 import '../models/person_model.dart';
 import '../models/class_model.dart';
 import '../services/api_service.dart';
-import 'gamification_screen.dart';
 
 class PeopleAndClassesScreen extends StatefulWidget {
   final String phoneNumber;
@@ -115,13 +114,6 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
       });
       if (!_isSinglePerson) {
         _showCongratsPopup(person, attendedCount);
-      }
-      if (_isSinglePerson) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (context) => const GamificationScreen()),
-          (route) => false,
-        );
       }
     } catch (e) {
       if (!mounted) return;
@@ -351,15 +343,7 @@ class _PeopleAndClassesScreenState extends State<PeopleAndClassesScreen> {
                         ),
                       ),
                       child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const GamificationScreen(),
-                            ),
-                          );
-                        },
+                        onPressed: () {},
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF667eea),
                           foregroundColor: Colors.white,
